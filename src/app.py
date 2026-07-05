@@ -36,6 +36,9 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
+
+
+
 @app.route('/user', methods=['GET'])
 def handle_hello():
 
@@ -44,6 +47,17 @@ def handle_hello():
     }
 
     return jsonify(response_body), 200
+
+
+
+@app.route('/people', methods=['GET'])
+def get_all_people():
+    # Obtenemos la lista de objetos People desde la base de datos
+    people_list = db.session.execute(select(People)).scalars().all()
+    # Convertimos la lista de objetos a una lista de diccionarios usando map
+    return jsonify(list(map(lambda p: p.serialize(), people_list))), 200
+
+
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':

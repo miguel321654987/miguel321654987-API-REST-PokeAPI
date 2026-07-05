@@ -17,3 +17,17 @@ class User(db.Model):
             "email": self.email,
             # do not serialize the password, its a security breach
         }
+
+
+
+class People(db.Model):
+    __tablename__ = 'people'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    people_name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+    fav_people: Mapped[list["Favorites_People"]] = relationship(back_populates="people")
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "people_name": self.people_name,
+        }
