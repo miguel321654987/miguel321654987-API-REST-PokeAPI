@@ -7,7 +7,7 @@ from flask_migrate import Migrate
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User,People
+from models import db, User, People
 from sqlalchemy import select, insert, delete
 
 app = Flask(__name__)
@@ -62,11 +62,25 @@ def get_all_users():
         return jsonify({
             "message": "Usuarios obtenidos con éxito",
             "results": all_users,
-            "total_users": len(all_users) # Añadimos información útil extra
+            "total_users": len(all_users)  # Añadimos información útil extra
         }), 200
 
     except Exception as e:
-        raise APIException(f"Error interno al obtener los usuarios: {str(e)}", status_code=500)
+        raise APIException(
+            f"Error interno al obtener los usuarios: {str(e)}", status_code=500)
+
+@app.route('/user/<int:user_id>', methods=['GET'])
+def get_user_by_id(user_id):
+    # Buscamos el usuario en la base de datos usando su ID
+    user = User.query.get(user_id)
+
+    # Si el usuario no existe, devolvemos un error 404
+    if user is None:
+        return jsonify({"msg": f"User with id {user_id} not found"}), 404
+
+    # Si existe, lo serializamos y lo devolvemos con un estado 200
+    return jsonify(user.serialize()), 200
+
 
 @app.route('/user', methods=['POST'])
 def create_user():
@@ -75,19 +89,22 @@ def create_user():
 
     # 2. Validar que el cuerpo de la petición no esté vacío
     if body is None:
-        raise APIException("Debes incluir el cuerpo (body) en formato JSON", status_code=400)
+        raise APIException(
+            "Debes incluir el cuerpo (body) en formato JSON", status_code=400)
 
     # 3. Validar los campos obligatorios del modelo User
     if 'email' not in body or body['email'].strip() == "":
         raise APIException("El campo 'email' es obligatorio", status_code=400)
-        
+
     if 'password' not in body or body['password'].strip() == "":
-        raise APIException("El campo 'password' es obligatorio", status_code=400)
+        raise APIException(
+            "El campo 'password' es obligatorio", status_code=400)
 
     # 4. Verificar si ya existe un usuario con ese mismo email
     exist_user = User.query.filter_by(email=body['email']).first()
     if exist_user is not None:
-        raise APIException(f"El usuario con el email '{body['email']}' ya existe", status_code=400)
+        raise APIException(
+            f"El usuario con el email '{body['email']}' ya existe", status_code=400)
 
     try:
         # 5. Crear la nueva instancia de nuestro modelo User
@@ -96,7 +113,8 @@ def create_user():
 
         new_user = User(
             email=body['email'],
-            password=body['password'], # Nota: En un proyecto real aquí se encriptaría la contraseña
+            # Nota: En un proyecto real aquí se encriptaría la contraseña
+            password=body['password'],
             is_active=is_active_value
         )
 
@@ -112,7 +130,36 @@ def create_user():
 
     except Exception as e:
         db.session.rollback()
-        raise APIException(f"Error interno del servidor: {str(e)}", status_code=500)
+        raise APIException(
+            f"Error interno del servidor: {str(e)}", status_code=500)
+
+@app.route('/user/<int:user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    # 1. Buscar el usuario en la base de datos usando su ID
+    user = User.query.get(user_id)
+
+    # 2. Si el usuario no existe, devolvemos un error 404 (siguiendo tu patrón de get_user_by_id)
+    if user is None:
+        return jsonify({"msg": f"User with id {user_id} not found"}), 404
+
+    try:
+        # 3. Eliminar el registro de la sesión de la base de datos
+        db.session.delete(user)
+        
+        # 4. Confirmar y guardar los cambios en la base de datos
+        db.session.commit()
+
+        # 5. Responder con un mensaje de éxito y un estado 200 OK
+        return jsonify({
+            "message": f"Usuario con id {user_id} eliminado con éxito",
+            "deleted_user": user.serialize() # Opcional: devolvemos los datos del usuario borrado
+        }), 200
+
+    except Exception as e:
+        # 6. Si ocurre un error, hacemos rollback para no corromper la base de datos
+        db.session.rollback()
+        raise APIException(
+            f"Error interno al intentar eliminar el usuario: {str(e)}", status_code=500)
 
 
 @app.route('/people', methods=['GET'])
@@ -129,7 +176,6 @@ if __name__ == '__main__':
     app.run(host='0.0.0.0', port=PORT, debug=False)
 
 
-
 @app.route('/people', methods=['POST'])
 def create_person():
     # 1. Obtener los datos en formato JSON enviados desde Postman
@@ -137,16 +183,20 @@ def create_person():
 
     # 2. Validar que el cuerpo de la petición no esté vacío
     if body is None:
-        raise APIException("Debes incluir el cuerpo (body) en formato JSON", status_code=400)
+        raise APIException(
+            "Debes incluir el cuerpo (body) en formato JSON", status_code=400)
 
     # 3. Validar que el campo obligatorio 'people_name' exista en el JSON
     if 'people_name' not in body or body['people_name'].strip() == "":
-        raise APIException("El campo 'people_name' es obligatorio y no puede estar vacío", status_code=400)
+        raise APIException(
+            "El campo 'people_name' es obligatorio y no puede estar vacío", status_code=400)
 
     # 4. Verificar si ya existe un personaje con ese mismo nombre (para evitar errores en la base de datos)
-    exist_person = People.query.filter_by(people_name=body['people_name']).first()
+    exist_person = People.query.filter_by(
+        people_name=body['people_name']).first()
     if exist_person is not None:
-        raise APIException(f"El personaje '{body['people_name']}' ya existe en la base de datos", status_code=400)
+        raise APIException(
+            f"El personaje '{body['people_name']}' ya existe en la base de datos", status_code=400)
 
     try:
         # 5. Crear la nueva instancia de nuestro modelo People
@@ -165,4 +215,5 @@ def create_person():
     except Exception as e:
         # En caso de un fallo inesperado del servidor o base de datos, revertimos los cambios
         db.session.rollback()
-        raise APIException(f"Error interno del servidor: {str(e)}", status_code=500)
+        raise APIException(
+            f"Error interno del servidor: {str(e)}", status_code=500)
