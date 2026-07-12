@@ -27,8 +27,6 @@ CORS(app)
 setup_admin(app)
 
 # Handle/serialize errors like a JSON object
-
-
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
@@ -68,6 +66,7 @@ def get_all_users():
     except Exception as e:
         raise APIException(
             f"Error interno al obtener los usuarios: {str(e)}", status_code=500)
+
 
 @app.route('/user/<int:user_id>', methods=['GET'])
 def get_user_by_id(user_id):
@@ -133,6 +132,7 @@ def create_user():
         raise APIException(
             f"Error interno del servidor: {str(e)}", status_code=500)
 
+
 @app.route('/user/<int:user_id>', methods=['DELETE'])
 def delete_user(user_id):
     # 1. Buscar el usuario en la base de datos usando su ID
@@ -145,14 +145,15 @@ def delete_user(user_id):
     try:
         # 3. Eliminar el registro de la sesión de la base de datos
         db.session.delete(user)
-        
+
         # 4. Confirmar y guardar los cambios en la base de datos
         db.session.commit()
 
         # 5. Responder con un mensaje de éxito y un estado 200 OK
         return jsonify({
             "message": f"Usuario con id {user_id} eliminado con éxito",
-            "deleted_user": user.serialize() # Opcional: devolvemos los datos del usuario borrado
+            # Opcional: devolvemos los datos del usuario borrado
+            "deleted_user": user.serialize()
         }), 200
 
     except Exception as e:
@@ -160,6 +161,7 @@ def delete_user(user_id):
         db.session.rollback()
         raise APIException(
             f"Error interno al intentar eliminar el usuario: {str(e)}", status_code=500)
+
 
 @app.route('/user/<int:user_id>', methods=['PUT'])
 def update_user(user_id):
@@ -247,17 +249,20 @@ def create_person():
         raise APIException(
             f"Error interno del servidor: {str(e)}", status_code=500)
 
+
 @app.route('/people/<int:person_id>', methods=['DELETE'])
 def delete_person(person_id):
     # 1. Buscar el personaje en la base de datos por su ID utilizando select
-    person = db.session.execute(select(People).filter_by(id=person_id)).scalar_one_or_none()
-    
+    person = db.session.execute(select(People).filter_by(
+        id=person_id)).scalar_one_or_none()
+
     # También puedes usar la sintaxis clásica si no tienes el 'select' importado de esa forma:
     # person = People.query.get(person_id)
 
     # 2. Validar si el personaje existe
     if person is None:
-        raise APIException(f"El personaje con ID {person_id} no existe", status_code=404)
+        raise APIException(
+            f"El personaje con ID {person_id} no existe", status_code=404)
 
     try:
         # 3. Eliminar el registro de la sesión y confirmar el cambio
@@ -273,4 +278,5 @@ def delete_person(person_id):
     except Exception as e:
         # En caso de error, hacemos rollback para no dejar la sesión en un estado corrupto
         db.session.rollback()
-        raise APIException(f"Error interno al eliminar el personaje: {str(e)}", status_code=500)
+        raise APIException(
+            f"Error interno al eliminar el personaje: {str(e)}", status_code=500)
