@@ -161,6 +161,35 @@ def delete_user(user_id):
         raise APIException(
             f"Error interno al intentar eliminar el usuario: {str(e)}", status_code=500)
 
+@app.route('/user/<int:user_id>', methods=['PUT'])
+def update_user(user_id):
+    # 1. Obtener los datos del JSON
+    body = request.get_json()
+
+    # 2. Buscar al usuario por su ID
+    user = User.query.get(user_id)
+    if user is None:
+        return jsonify({"msg": f"User with id {user_id} not found"}), 404
+
+    try:
+        # 3. Modificar directamente los campos con los nuevos valores del body
+        user.email = body.get('email', user.email)
+        user.password = body.get('password', user.password)
+        user.is_active = body.get('is_active', user.is_active)
+
+        # 4. Guardar los cambios en la base de datos
+        db.session.commit()
+
+        # 5. Responder con éxito
+        return jsonify({
+            "message": "Usuario actualizado con éxito",
+            "results": user.serialize()
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        raise APIException(f"Error interno: {str(e)}", status_code=500)
+
 
 @app.route('/people', methods=['GET'])
 def get_all_people():
