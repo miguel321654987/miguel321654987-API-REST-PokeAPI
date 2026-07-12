@@ -246,3 +246,31 @@ def create_person():
         db.session.rollback()
         raise APIException(
             f"Error interno del servidor: {str(e)}", status_code=500)
+
+@app.route('/people/<int:person_id>', methods=['DELETE'])
+def delete_person(person_id):
+    # 1. Buscar el personaje en la base de datos por su ID utilizando select
+    person = db.session.execute(select(People).filter_by(id=person_id)).scalar_one_or_none()
+    
+    # También puedes usar la sintaxis clásica si no tienes el 'select' importado de esa forma:
+    # person = People.query.get(person_id)
+
+    # 2. Validar si el personaje existe
+    if person is None:
+        raise APIException(f"El personaje con ID {person_id} no existe", status_code=404)
+
+    try:
+        # 3. Eliminar el registro de la sesión y confirmar el cambio
+        db.session.delete(person)
+        db.session.commit()
+
+        # 4. Responder al cliente que el borrado fue exitoso
+        return jsonify({
+            "message": f"Personaje '{person.people_name}' eliminado con éxito",
+            "id_deleted": person_id
+        }), 200
+
+    except Exception as e:
+        # En caso de error, hacemos rollback para no dejar la sesión en un estado corrupto
+        db.session.rollback()
+        raise APIException(f"Error interno al eliminar el personaje: {str(e)}", status_code=500)
