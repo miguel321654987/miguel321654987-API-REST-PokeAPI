@@ -30,7 +30,7 @@ class People(db.Model):
         }
 
 
-class Students(Model):
+class Students(db.Model):
     id: Mapped[int]
     email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(nullable=False)
@@ -43,7 +43,7 @@ class Students(Model):
             # do not serialize the password, its a security breach
         }
     
-class Staff(Model):
+class Staff(db.Model):
     id: Mapped[int]
     email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(nullable=False)
