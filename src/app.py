@@ -7,7 +7,7 @@ from flask_migrate import Migrate
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, People
+from models import db, User, People, Students, Staff
 from sqlalchemy import select, insert, delete
 
 app = Flask(__name__)
@@ -131,6 +131,82 @@ def create_user():
         db.session.rollback()
         raise APIException(
             f"Error interno del servidor: {str(e)}", status_code=500)
+    
+    # ==========================================
+# ENDPOINTS PARA STUDENTS
+# ==========================================
+
+@app.route('/students', methods=['POST'])
+def create_student():
+    # 1. Obtener los datos en formato JSON enviados desde Postman
+    body = request.get_json()
+
+    # 2. Validar que el cuerpo de la petición no esté vacío
+    if body is None:
+        raise APIException(
+            "Debes incluir el cuerpo (body) en formato JSON", status_code=400)
+
+    # 3. Validar los campos obligatorios del modelo Students
+    if 'email' not in body or body['email'].strip() == "":
+        raise APIException("El campo 'email' es obligatorio", status_code=400)
+
+    if 'password' not in body or body['password'].strip() == "":
+        raise APIException(
+            "El campo 'password' es obligatorio", status_code=400)
+
+    # 4. Verificar si ya existe un estudiante con ese mismo email
+    exist_student = Students.query.filter_by(email=body['email']).first()
+    if exist_student is not None:
+        raise APIException(
+            f"El estudiante con el email '{body['email']}' ya existe", status_code=400)
+
+    try:
+        # 5. Crear la nueva instancia de nuestro modelo Students
+        # Tomamos 'is_active' del body, si no viene enviado, por defecto será True
+        is_active_value = body.get('is_active', True)
+
+        new_student = Students(
+            email=body['email'],
+            password=body['password'],
+            is_active=is_active_value
+        )
+
+        # 6. Guardar el nuevo registro en la base de datos
+        db.session.add(new_student)
+        db.session.commit()
+
+        # 7. Responder con el estudiante creado (serializado, sin la contraseña)
+        return jsonify({
+            "message": "Estudiante creado con éxito",
+            "results": new_student.serialize()
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        raise APIException(
+            f"Error interno del servidor: {str(e)}", status_code=500)
+
+
+@app.route('/students', methods=['GET'])
+def get_all_students():
+    try:
+        # 1. Consultar todos los estudiantes de la base de datos
+        all_students = Students.query.all()
+
+        # 2. Mapear la lista de estudiantes convirtiendo cada instancia a formato diccionario (JSON)
+        # Usamos list comprehension para aplicar .serialize() a cada estudiante encontrado
+        students_serialized = [student.serialize() for student in all_students]
+
+        # 3. Devolver la respuesta en formato JSON con estado 200 (OK)
+        return jsonify({
+            "message": "Lista de estudiantes obtenida con éxito",
+            "results": students_serialized
+        }), 200
+
+    except Exception as e:
+        raise APIException(
+            f"Error interno del servidor al obtener estudiantes: {str(e)}", status_code=500)
+
 
 
 @app.route('/user/<int:user_id>', methods=['DELETE'])

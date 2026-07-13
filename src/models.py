@@ -6,7 +6,8 @@ db = SQLAlchemy()
 
 class User(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
-    email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(
+        String(120), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean(), nullable=False)
 
@@ -21,7 +22,8 @@ class User(db.Model):
 class People(db.Model):
     __tablename__ = 'people'
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    people_name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+    people_name: Mapped[str] = mapped_column(
+        String(50), unique=True, nullable=False)
 
     def serialize(self):
         return {
@@ -31,8 +33,9 @@ class People(db.Model):
 
 
 class Students(db.Model):
-    id: Mapped[int]
-    email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    email: Mapped[str] = mapped_column(
+        String(120), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean(), nullable=False)
 
@@ -42,10 +45,13 @@ class Students(db.Model):
             "email": self.email,
             # do not serialize the password, its a security breach
         }
-    
+
+
 class Staff(db.Model):
-    id: Mapped[int]
-    email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
+    # En lugar de id: Mapped[int], cámbialo por esto:
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    email: Mapped[str] = mapped_column(
+        String(120), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean(), nullable=False)
 
@@ -53,5 +59,4 @@ class Staff(db.Model):
         return {
             "id": self.id,
             "email": self.email,
-            # do not serialize the password, its a security breach
         }
