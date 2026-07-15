@@ -3,7 +3,7 @@ from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 
 
-from models import db, User, People
+from models import db, User, People, Students, Staff
 
 
 def setup_admin(app):
@@ -13,3 +13,5 @@ def setup_admin(app):
 
     admin.add_view(ModelView(User, db.session))
     admin.add_view(ModelView(People, db.session))
+    admin.add_view(ModelView(Students, db.session))
+    admin.add_view(ModelView(Staff, db.session))
