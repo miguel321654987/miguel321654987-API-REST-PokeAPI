@@ -14,12 +14,20 @@ app = Flask(__name__)
 app.url_map.strict_slashes = False
 
 db_url = os.getenv("DATABASE_URL")
-if db_url is not None:
+if db_url is not None and not db_url.startswith("sqlite:///"):
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace(
         "postgres://", "postgresql://")
 else:
-    app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:////tmp/test.db"
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    # Bloque especial para Windows Local: Calcula la ruta absoluta automática hacia src/instance/
+    base_dir = os.path.abspath(os.path.dirname(__file__))
+    instance_dir = os.path.join(base_dir, 'instance')
+    
+    # Crea la carpeta src/instance si Windows la borró o bloqueó
+    if not os.path.exists(instance_dir):
+        os.makedirs(instance_dir)
+        
+    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(instance_dir, 'example.db')}"
+
 
 MIGRATE = Migrate(app, db)
 db.init_app(app)
