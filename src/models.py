@@ -5,7 +5,7 @@ db = SQLAlchemy()
 
 
 class User(db.Model):
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
     email: Mapped[str] = mapped_column(
         String(120), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(nullable=False)
@@ -48,7 +48,6 @@ class Students(db.Model):
 
 
 class Staff(db.Model):
-    # En lugar de id: Mapped[int], cámbialo por esto:
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     email: Mapped[str] = mapped_column(
         String(120), unique=True, nullable=False)
