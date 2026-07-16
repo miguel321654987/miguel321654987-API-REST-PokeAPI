@@ -50,6 +50,18 @@ Develop a full-stack testing application (Flask + React) that consumes data from
 
 ---
 
+### 📌 [2026-07-16 14:50:15 CEST] - Current branch: feature/deepseek-roadmap
+
+- **Inserted on:** 2026-07-16 15:26:02 CEST while on branch `feature/deepseek-roadmap`
+- **Changes Made:**
+  - Reviewed the current repository and confirmed the backend is a Flask boilerplate with endpoints `/user`, `/students`, and `/people`.
+  - Identified that the project does not currently include a React frontend or PokeAPI integration.
+  - Confirmed a mismatch between the roadmap goals and the existing codebase.
+- **Result / Status:** The project needs realignment: either update the roadmap to reflect the current backend state or implement the missing PokeAPI/React features.
+- **Next Steps:** Update the roadmap to reflect reality, fix server initialization issues in `src/app.py`, and design the missing PokeAPI endpoints.
+
+---
+
 # <!--
 
 # TRADUCCIÓN AL ESPAÑOL (SOLO PARA REFERENCIA HUMANA)
@@ -103,4 +115,14 @@ Desarrollar una aplicación de pruebas full-stack (Flask + React) que consuma da
 
 1. Validar que la IA lea este archivo correctamente ejecutando un prompt de prueba en el chat.
 2. Comenzar a configurar la estructura básica del Backend en Flask (`app.py` o `models.py`) asegurando que la ruta de conexión a SQLite esté lista.
-   -->
+
+### 📌 [2026-07-16 14:50:15 CEST] - Rama actual: feature/deepseek-roadmap
+
+- **Insertado el:** 2026-07-16 15:26:02 CEST en la rama `feature/deepseek-roadmap`
+- **Cambios realizados:**
+  - Revisé el repositorio actual y confirmé que el backend es un boilerplate de Flask con endpoints `/user`, `/students` y `/people`.
+  - Identifiqué que el proyecto no incluye actualmente un frontend React ni integración con PokeAPI.
+  - Confirmé un desajuste entre los objetivos del roadmap y el código existente.
+- **Resultado / Estado:** El proyecto necesita realinearse: actualizar el roadmap para reflejar el estado actual del backend o implementar las funcionalidades faltantes de PokeAPI/React.
+- **Próximos pasos:** Actualizar el roadmap para reflejar la realidad, corregir la inicialización del servidor en `src/app.py` y diseñar los endpoints faltantes de PokeAPI.
+  -->
