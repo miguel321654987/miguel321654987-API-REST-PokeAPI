@@ -285,10 +285,6 @@ def get_all_people():
     return jsonify(list(map(lambda p: p.serialize(), people_list))), 200
 
 
-# this only runs if `$ python src/app.py` is executed
-if __name__ == '__main__':
-    PORT = int(os.environ.get('PORT', 3000))
-    app.run(host='0.0.0.0', port=PORT, debug=False)
 
 
 @app.route('/people', methods=['POST'])
@@ -364,3 +360,9 @@ def delete_person(person_id):
         db.session.rollback()
         raise APIException(
             f"Error interno al eliminar el personaje: {str(e)}", status_code=500)
+
+
+# this only runs if `$ python src/app.py` is executed
+if __name__ == '__main__':
+    PORT = int(os.environ.get('PORT', 3000))
+    app.run(host='0.0.0.0', port=PORT, debug=False)
