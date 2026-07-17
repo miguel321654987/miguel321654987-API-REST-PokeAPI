@@ -62,6 +62,28 @@ Develop a full-stack testing application (Flask + React) that consumes data from
 
 ---
 
+### 📌 [2026-07-17] - Changes applied today
+
+- **Inserted on:** 2026-07-17 12:51:16 UTC while on branch `desarrollo-models-app`
+- **Changes Made:**
+  - Replaced usage of the `People` class with `Pokemon` in the backend.
+  - Renamed the endpoints from `/people` to `/pokemon` in `src/app.py` and adjusted the function names to `get_all_pokemon`, `create_pokemon`, and `delete_pokemon`.
+  - Updated `src/admin.py` to register `Pokemon` in the admin panel.
+- **Status:** Completed locally. Historical migrations and the table remain named `people` (not modified).
+- **Next steps suggested:**
+  - (Optional) Update migrations / rename table if you want to reflect `pokemon` in the database.
+
+### 📌 [2026-07-17 13:02:52 UTC] - Additional actions
+
+- **Inserted on:** 2026-07-17 13:02:52 UTC while on branch `desarrollo-models-app`
+- **Changes Made:**
+  - Installed dependencies: `flask`, `flask-migrate`, `flask-sqlalchemy`, `alembic`, `flask-cors`.
+  - Fixed the `Pokemon` model and removed nonexistent `Students`/`Staff` imports in `src/admin.py` and `src/app.py`.
+  - Added Alembic migration to rename table `people` → `pokemon` and applied it.
+  - Created/updated SQLite database at [src/instance/example.db](src/instance/example.db#L1).
+- **Status:** Applied locally; no remote deployment performed.
+- **Next steps suggested:** backup the DB, run the server and test endpoints.
+
 # <!--
 
 # TRADUCCIÓN AL ESPAÑOL (SOLO PARA REFERENCIA HUMANA)
@@ -126,3 +148,25 @@ Desarrollar una aplicación de pruebas full-stack (Flask + React) que consuma da
 - **Resultado / Estado:** El proyecto necesita realinearse: actualizar el roadmap para reflejar el estado actual del backend o implementar las funcionalidades faltantes de PokeAPI/React.
 - **Próximos pasos:** Actualizar el roadmap para reflejar la realidad, corregir la inicialización del servidor en `src/app.py` y diseñar los endpoints faltantes de PokeAPI.
   -->
+
+### 📌 [2026-07-17] - Cambios aplicados hoy
+
+- **Insertado el:** 2026-07-17 12:51:16 UTC en la rama `desarrollo-models-app`
+- **Cambios realizados:**
+  - Reemplacé el uso de la clase `People` por `Pokemon` en el backend.
+  - Renombré los endpoints de `/people` a `/pokemon` en `src/app.py` y ajusté los nombres de las funciones a `get_all_pokemon`, `create_pokemon` y `delete_pokemon`.
+  - Actualicé `src/admin.py` para registrar `Pokemon` en el panel de administración.
+- **Estado:** Completado localmente. Las migraciones históricas y la tabla siguen llamadas `people` (no modificadas).
+- **Próximos pasos sugeridos:**
+  - (Opcional) Actualizar migraciones / renombrar tabla si se desea reflejar `pokemon` en la base de datos.
+
+### 📌 [2026-07-17 13:02:52 UTC] - Acciones adicionales
+
+- **Insertado el:** 2026-07-17 13:02:52 UTC en la rama `desarrollo-models-app`
+- **Cambios realizados:**
+  - Instalé dependencias: `flask`, `flask-migrate`, `flask-sqlalchemy`, `alembic`, `flask-cors`.
+  - Corregí el modelo `Pokemon` y eliminé importaciones inexistentes `Students`/`Staff` en `src/admin.py` y `src/app.py`.
+  - Añadí una migración Alembic para renombrar la tabla `people` → `pokemon` y la apliqué.
+  - Creé/actualicé la base de datos SQLite en [src/instance/example.db](src/instance/example.db#L1).
+- **Estado:** Aplicado localmente; no se realizó despliegue remoto.
+- **Próximos pasos sugeridos:** Hacer copia de seguridad de la BD, arrancar el servidor y probar los endpoints.

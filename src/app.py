@@ -7,7 +7,7 @@ from flask_migrate import Migrate
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, People, Students, Staff
+from models import db, User, Pokemon
 from sqlalchemy import select, insert, delete
 
 app = Flask(__name__)
@@ -140,81 +140,6 @@ def create_user():
         raise APIException(
             f"Error interno del servidor: {str(e)}", status_code=500)
     
-    # ==========================================
-# ENDPOINTS PARA STUDENTS
-# ==========================================
-
-@app.route('/students', methods=['POST'])
-def create_student():
-    # 1. Obtener los datos en formato JSON enviados desde Postman
-    body = request.get_json()
-
-    # 2. Validar que el cuerpo de la petición no esté vacío
-    if body is None:
-        raise APIException(
-            "Debes incluir el cuerpo (body) en formato JSON", status_code=400)
-
-    # 3. Validar los campos obligatorios del modelo Students
-    if 'email' not in body or body['email'].strip() == "":
-        raise APIException("El campo 'email' es obligatorio", status_code=400)
-
-    if 'password' not in body or body['password'].strip() == "":
-        raise APIException(
-            "El campo 'password' es obligatorio", status_code=400)
-
-    # 4. Verificar si ya existe un estudiante con ese mismo email
-    exist_student = Students.query.filter_by(email=body['email']).first()
-    if exist_student is not None:
-        raise APIException(
-            f"El estudiante con el email '{body['email']}' ya existe", status_code=400)
-
-    try:
-        # 5. Crear la nueva instancia de nuestro modelo Students
-        # Tomamos 'is_active' del body, si no viene enviado, por defecto será True
-        is_active_value = body.get('is_active', True)
-
-        new_student = Students(
-            email=body['email'],
-            password=body['password'],
-            is_active=is_active_value
-        )
-
-        # 6. Guardar el nuevo registro en la base de datos
-        db.session.add(new_student)
-        db.session.commit()
-
-        # 7. Responder con el estudiante creado (serializado, sin la contraseña)
-        return jsonify({
-            "message": "Estudiante creado con éxito",
-            "results": new_student.serialize()
-        }), 201
-
-    except Exception as e:
-        db.session.rollback()
-        raise APIException(
-            f"Error interno del servidor: {str(e)}", status_code=500)
-
-
-@app.route('/students', methods=['GET'])
-def get_all_students():
-    try:
-        # 1. Consultar todos los estudiantes de la base de datos
-        all_students = Students.query.all()
-
-        # 2. Mapear la lista de estudiantes convirtiendo cada instancia a formato diccionario (JSON)
-        # Usamos list comprehension para aplicar .serialize() a cada estudiante encontrado
-        students_serialized = [student.serialize() for student in all_students]
-
-        # 3. Devolver la respuesta en formato JSON con estado 200 (OK)
-        return jsonify({
-            "message": "Lista de estudiantes obtenida con éxito",
-            "results": students_serialized
-        }), 200
-
-    except Exception as e:
-        raise APIException(
-            f"Error interno del servidor al obtener estudiantes: {str(e)}", status_code=500)
-
 
 
 @app.route('/user/<int:user_id>', methods=['DELETE'])
@@ -277,18 +202,18 @@ def update_user(user_id):
         raise APIException(f"Error interno: {str(e)}", status_code=500)
 
 
-@app.route('/people', methods=['GET'])
-def get_all_people():
-    # Obtenemos la lista de objetos People desde la base de datos
-    people_list = db.session.execute(select(People)).scalars().all()
+@app.route('/pokemon', methods=['GET'])
+def get_all_pokemon():
+    # Obtenemos la lista de objetos Pokemon desde la base de datos
+    pokemon_list = db.session.execute(select(Pokemon)).scalars().all()
     # Convertimos la lista de objetos a una lista de diccionarios usando map
-    return jsonify(list(map(lambda p: p.serialize(), people_list))), 200
+    return jsonify(list(map(lambda p: p.serialize(), pokemon_list))), 200
 
 
 
 
-@app.route('/people', methods=['POST'])
-def create_person():
+@app.route('/pokemon', methods=['POST'])
+def create_pokemon():
     # 1. Obtener los datos en formato JSON enviados desde Postman
     body = request.get_json()
 
@@ -302,16 +227,16 @@ def create_person():
         raise APIException(
             "El campo 'people_name' es obligatorio y no puede estar vacío", status_code=400)
 
-    # 4. Verificar si ya existe un personaje con ese mismo nombre (para evitar errores en la base de datos)
-    exist_person = People.query.filter_by(
+    # 4. Verificar si ya existe un Pokémon con ese mismo nombre (para evitar errores en la base de datos)
+    exist_person = Pokemon.query.filter_by(
         people_name=body['people_name']).first()
     if exist_person is not None:
         raise APIException(
             f"El personaje '{body['people_name']}' ya existe en la base de datos", status_code=400)
 
     try:
-        # 5. Crear la nueva instancia de nuestro modelo People
-        new_person = People(people_name=body['people_name'])
+        # 5. Crear la nueva instancia de nuestro modelo Pokemon
+        new_person = Pokemon(people_name=body['people_name'])
 
         # 6. Guardar el nuevo registro en la base de datos PostgreSQL
         db.session.add(new_person)
@@ -330,28 +255,28 @@ def create_person():
             f"Error interno del servidor: {str(e)}", status_code=500)
 
 
-@app.route('/people/<int:person_id>', methods=['DELETE'])
-def delete_person(person_id):
-    # 1. Buscar el personaje en la base de datos por su ID utilizando select
-    person = db.session.execute(select(People).filter_by(
+@app.route('/pokemon/<int:person_id>', methods=['DELETE'])
+def delete_pokemon(person_id):
+    # 1. Buscar el Pokémon en la base de datos por su ID utilizando select
+    pokemon = db.session.execute(select(Pokemon).filter_by(
         id=person_id)).scalar_one_or_none()
 
     # También puedes usar la sintaxis clásica si no tienes el 'select' importado de esa forma:
-    # person = People.query.get(person_id)
+    # person = Pokemon.query.get(person_id)
 
-    # 2. Validar si el personaje existe
-    if person is None:
+    # 2. Validar si el Pokémon existe
+    if pokemon is None:
         raise APIException(
             f"El personaje con ID {person_id} no existe", status_code=404)
 
     try:
         # 3. Eliminar el registro de la sesión y confirmar el cambio
-        db.session.delete(person)
+        db.session.delete(pokemon)
         db.session.commit()
 
         # 4. Responder al cliente que el borrado fue exitoso
         return jsonify({
-            "message": f"Personaje '{person.people_name}' eliminado con éxito",
+            "message": f"Personaje '{pokemon.people_name}' eliminado con éxito",
             "id_deleted": person_id
         }), 200
 
