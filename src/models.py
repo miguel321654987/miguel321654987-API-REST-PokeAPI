@@ -22,12 +22,12 @@ class User(db.Model):
 class Pokemon(db.Model):
     __tablename__ = 'pokemon'
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    pikmin_name: Mapped[str] = mapped_column(
+    people_name: Mapped[str] = mapped_column(
         String(50), unique=True, nullable=False)
 
-def serialize(self):
-    return {
-        "id": self.id,
-        "pikmin_name": self.pikmin_name,
-    }
+    def serialize(self):
+        return {
+            "id": self.id,
+            "people_name": self.people_name,
+        }
 
