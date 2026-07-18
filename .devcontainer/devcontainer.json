@@ -1,43 +1,36 @@
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/postgres
 {
-	"name": "Python 3 & PostgreSQL",
-	"dockerComposeFile": "docker-compose.yml",
-	"service": "app",
-	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
-	"customizations": {
-		"vscode": {
-			"settings": {
-				"editor.defaultFormatter": "esbenp.prettier-vscode",
-				"workbench.editorAssociations": {   
-					"*.md": "vscode.markdown.preview.editor"
-				}
-			},
-			"extensions": [ "esbenp.prettier-vscode", "MS-vsliveshare.vsliveshare" ]
-		}
-	},
+  "name": "Python 3 & Pipenv Environment",
 
-	// Features to add to the dev container. More info: https://containers.dev/features.
-	// "features": {},
+  // Enlace con tu archivo docker-compose local
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app", // Asegúrate de que 'app' sea el nombre de tu servicio en el docker-compose.yml
+  "workspaceFolder": "/workspaces",
+  "remoteEnv": {
+    "DATABASE_URL": "postgresql://gitpod:postgres@db:5432/example"
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "continue.apiBase": "http://host.docker.internal:11434"
+      },
+      "extensions": [
+        "esbenp.prettier-vscode",
+        "MS-vsliveshare.vsliveshare",
+        "Continue.continue"
+      ]
+    }
+  },
 
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// This can be used to network with other containers or the host.
-	"forwardPorts": [5432, 3000],
+  "forwardPorts": [3000],
 
-	"portsAttributes": {
-		"3000": {
-			"visibility": "public"
-			}
-	},
+  "portsAttributes": {
+    "3000": {
+      "visibility": "public",
+      "label": "Aplicación Web"
+    }
+  }
 
-	"onCreateCommand": "cp -n .env.example .env && pipenv install",
+  //"onCreateCommand": "cp -n .env.example .env && pipenv install",
 
-	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "pipenv install && bash database.sh && python docs/assets/welcome.py",
-
-	// Configure tool-specific properties.
-	// "customizations": {},
-
-	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-	// "remoteUser": "root"
+  //"postCreateCommand": "pipenv install && bash database.sh && python docs/assets/welcome.py"
 }
