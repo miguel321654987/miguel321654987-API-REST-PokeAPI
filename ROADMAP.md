@@ -84,6 +84,24 @@ Develop a full-stack testing application (Flask + React) that consumes data from
 - **Status:** Applied locally; no remote deployment performed.
 - **Next steps suggested:** backup the DB, run the server and test endpoints.
 
+### 📌 [2026-07-18 22:30:00 UTC] - Reconfig Roadmap.md (Commit & Log Rule Compliance)
+
+Inserted on: 2026-07-18 15:40:15 CEST while on branch Pruebas-IA
+
+Changes Made:
+
+- Commit message applied: "Reconfig Roadmap.md".
+- Updated structural rules for PLANNING_GUIDE.md (Step 3): Enforced vertical separation logic.
+- Enacted atomic updates strictly modifying only ROADMAP.md to avoid side effects in other components.
+- Documented Git commit compliance regarding date/time/branch/title as per Step 3 requirements.
+
+Status: Applied locally; no remote deployment performed. Synchronized with current project state and "Step 3" planning rules.
+
+Next steps suggested:
+
+1. Push changes to origin branch Pruebas-IA (if applicable).
+2. Proceed to next feature or cleanup task following strict MVC/Blueprint architecture (4Geeks Academy).
+
 # <!--
 
 # TRADUCCIÓN AL ESPAÑOL (SOLO PARA REFERENCIA HUMANA)
@@ -147,7 +165,6 @@ Desarrollar una aplicación de pruebas full-stack (Flask + React) que consuma da
   - Confirmé un desajuste entre los objetivos del roadmap y el código existente.
 - **Resultado / Estado:** El proyecto necesita realinearse: actualizar el roadmap para reflejar el estado actual del backend o implementar las funcionalidades faltantes de PokeAPI/React.
 - **Próximos pasos:** Actualizar el roadmap para reflejar la realidad, corregir la inicialización del servidor en `src/app.py` y diseñar los endpoints faltantes de PokeAPI.
-  -->
 
 ### 📌 [2026-07-17] - Cambios aplicados hoy
 
@@ -170,3 +187,18 @@ Desarrollar una aplicación de pruebas full-stack (Flask + React) que consuma da
   - Creé/actualicé la base de datos SQLite en [src/instance/example.db](src/instance/example.db#L1).
 - **Estado:** Aplicado localmente; no se realizó despliegue remoto.
 - **Próximos pasos sugeridos:** Hacer copia de seguridad de la BD, arrancar el servidor y probar los endpoints.
+
+### 📌 [2026-07-18 23:30:00 UTC] - Reconfig Roadmap.md (Cumplimiento de Reglas de Compromiso y Registro)
+
+- **Insertado el:** 2026-07-19 05:40:15 CEST mientras se trabajaba en la rama Pruebas-IA
+- **Cambios realizados:**
+- Mensaje del commit aplicado: "Reconfig Roadmap.md".
+- Actualizadas las reglas estructurales de PLANNING_GUIDE.md (Paso 3): Se impuso la lógica de separación vertical.
+- Implementadas actualizaciones atómicas que modifican estrictamente solo ROADMAP.md para evitar efectos secundarios en otros componentes.
+- Documentada el cumplimiento del commit Git respecto a fecha/hora/rama/título según los requisitos del Paso 3.
+- **Estado:** Aplicado localmente; no se realizó despliegue remoto. Sincronizado con el estado actual del proyecto y las reglas de planificación "Paso 3".
+
+- **Próximos pasos sugeridos:**
+- Proceder al siguiente feature o tarea de limpieza siguiendo una arquitectura estricta MVC/Blueprints (Academia 4Geeks).
+
+-->
