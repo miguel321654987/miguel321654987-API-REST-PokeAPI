@@ -31,3 +31,8 @@ class Pokemon(db.Model):
             "people_name": self.people_name,
         }
 
+    __tablename__ = 'pokemon' id: Mapped[int] = mapped_column(Integer, primary_key=True) people_name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+
+
+def serialize(self): return {"id": self.id, "people_name": self.people_name,
+                             }
