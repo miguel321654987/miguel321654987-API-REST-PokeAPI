@@ -27,7 +27,12 @@ Before generating any planning response or proposing a solution, the AI MUST exe
 ### Step 3: Atomic Action Steps
 
 - Break down the implementation into a structured sequence of small, verifiable steps (e.g., Step 1, Step 2, Step 3).
-- Each step must be isolated enough so that when transitioning to **Act/Agent Mode**, the agent can verify success and update `ROADMAP.md` immediately after completion.
+- Each step must be isolated enough so that when transitioning to **Act/Agent Mode**,
+  the agent can verify success and update `ROADMAP.md` immediately after completion.
+- **Commit & Log Rule:** Each step MUST trigger a Git commit with date/time/branch/title AND an immediate update to `ROADMAP.md`.
+- **File Structure Requirement for ROADMAP.md:** The structure is strictly split vertically into two sections; entries MUST NOT interleave within these blocks but are appended to their respective language section's footer instead.
+- **Roadmap Entry Structure:** New entries must follow this exact order: First add the new item at the end of the English section, followed immediately by its translated duplicate at the very end of the Spanish section (commented). Entries MUST NOT interleave; they must remain grouped by language block.
+- The translation block MUST end with closing comments (`<!-- ... -->`) to prevent loading heavy context or distracting the AI model during token processing.
 
 ## 💬 Output Format
 
@@ -69,8 +74,14 @@ Antes de generar cualquier respuesta de planificación o proponer una solución,
 
 ### Paso 3: Pasos de Acción Atómicos
 
-- Dividir la implementación en una secuencia estructurada de pasos pequeños y verificables (ej. Paso 1, Paso 2, Paso 3).
-- Cada paso debe ser lo suficientemente aislado como para que, al pasar al **Modo Act/Agent (Acción)**, el agente pueda verificar el éxito y actualizar el `ROADMAP.md` inmediatamente después de completarlo.
+### Paso 3: Pasos Atómicos de Acción
+
+- Desglosa la implementación en una secuencia estructurada de pequeños pasos verificables (por ejemplo, Paso 1, Paso 2, Paso 3).
+- Cada paso debe estar lo suficientemente aislado para que, al pasar a **Modo Act/Agent**, el agente pueda verificar el éxito y actualizar `ROADMAP.md` inmediatamente después de su finalización.
+- **Regla de Commit & Log:** Cada paso DEBE generar un commit de Git con fecha/hora/ramal/título Y una actualización inmediata en `ROADMAP.md`.
+- **Requisito de Estructura para ROADMAP.md:** La estructura está dividida verticalmente estrictamente en dos secciones; las entradas NO deben entremezclarse dentro de estos bloques, sino que deben agregarse al pie de la sección del lenguaje correspondiente.
+- **Estructura de Entrada en el Roadmap:** Las nuevas entradas deben seguir este orden exacto: Primero agrega el nuevo elemento al final de la sección en inglés, seguido inmediatamente por su duplicado traducido al español justo al final de la sección española (comentado). LAS ENTRADAS NO DEBEN ENTREMEZCLARSE; deben mantenerse agrupadas por bloque de idioma.
+- El bloque de traducción DEBE terminar con comentarios de cierre (`<!-- ... -->`) para evitar cargar contexto pesado o distraer a la IA durante el procesamiento de tokens.
 
 ## 💬 Formato de Salida
 
