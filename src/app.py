@@ -21,11 +21,11 @@ else:
     # Bloque especial para Windows Local: Calcula la ruta absoluta automática hacia src/instance/
     base_dir = os.path.abspath(os.path.dirname(__file__))
     instance_dir = os.path.join(base_dir, 'instance')
-    
+
     # Crea la carpeta src/instance si Windows la borró o bloqueó
     if not os.path.exists(instance_dir):
         os.makedirs(instance_dir)
-        
+
     app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(instance_dir, 'example.db')}"
 
 
@@ -35,6 +35,8 @@ CORS(app)
 setup_admin(app)
 
 # Handle/serialize errors like a JSON object
+
+
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
@@ -139,7 +141,6 @@ def create_user():
         db.session.rollback()
         raise APIException(
             f"Error interno del servidor: {str(e)}", status_code=500)
-    
 
 
 @app.route('/user/<int:user_id>', methods=['DELETE'])
@@ -208,8 +209,6 @@ def get_all_pokemon():
     pokemon_list = db.session.execute(select(Pokemon)).scalars().all()
     # Convertimos la lista de objetos a una lista de diccionarios usando map
     return jsonify(list(map(lambda p: p.serialize(), pokemon_list))), 200
-
-
 
 
 @app.route('/pokemon', methods=['POST'])

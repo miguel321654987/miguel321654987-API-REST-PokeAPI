@@ -192,13 +192,12 @@ Desarrollar una aplicación de pruebas full-stack (Flask + React) que consuma da
 
 - **Insertado el:** 2026-07-19 05:40:15 CEST mientras se trabajaba en la rama Pruebas-IA
 - **Cambios realizados:**
-- Mensaje del commit aplicado: "Reconfig Roadmap.md".
-- Actualizadas las reglas estructurales de PLANNING_GUIDE.md (Paso 3): Se impuso la lógica de separación vertical.
-- Implementadas actualizaciones atómicas que modifican estrictamente solo ROADMAP.md para evitar efectos secundarios en otros componentes.
-- Documentada el cumplimiento del commit Git respecto a fecha/hora/rama/título según los requisitos del Paso 3.
+  - Mensaje del commit aplicado: "Reconfig Roadmap.md".
+  - Actualizadas las reglas estructurales de PLANNING_GUIDE.md (Paso 3): Se impuso la lógica de separación vertical.
+  - Implementadas actualizaciones atómicas que modifican estrictamente solo ROADMAP.md para evitar efectos secundarios en otros componentes.
+  - Documentada el cumplimiento del commit Git respecto a fecha/hora/rama/título según los requisitos del Paso 3.
 - **Estado:** Aplicado localmente; no se realizó despliegue remoto. Sincronizado con el estado actual del proyecto y las reglas de planificación "Paso 3".
 
-- **Próximos pasos sugeridos:**
-- Proceder al siguiente feature o tarea de limpieza siguiendo una arquitectura estricta MVC/Blueprints (Academia 4Geeks).
+- **Próximos pasos sugeridos:** Proceder al siguiente feature o tarea de limpieza siguiendo una arquitectura estricta MVC/Blueprints (Academia 4Geeks).
 
 -->
