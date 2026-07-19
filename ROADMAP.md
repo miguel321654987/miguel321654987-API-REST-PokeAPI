@@ -102,6 +102,17 @@ Next steps suggested:
 1. Push changes to origin branch Pruebas-IA (if applicable).
 2. Proceed to next feature or cleanup task following strict MVC/Blueprint architecture (4Geeks Academy).
 
+### 📌 [2026-07-19] - Update Roadmap.md for recent changes
+
+- **Inserted on:** 2026-07-19 15:30:00 CEST while on branch Pruebas-IA
+- **Changes Made:**
+  - Updated the `ROADMAP.md` file to reflect the recent commit and actions taken.
+  - Added a new entry for the most recent changes, including the creation of the `Pokemon` model, renaming of endpoints, and additional backend setup.
+- **Estado:** Completed locally. No remote deployment performed.
+- **Next steps suggested:** Proceed to next feature or cleanup task following strict MVC/Blueprint architecture (4Geeks Academy).
+
+- **Language Model Used:** qwen2.5-coder:7b with Context 8192 limited by Ollama
+
 # <!--
 
 # TRADUCCIÓN AL ESPAÑOL (SOLO PARA REFERENCIA HUMANA)
@@ -199,5 +210,15 @@ Desarrollar una aplicación de pruebas full-stack (Flask + React) que consuma da
 - **Estado:** Aplicado localmente; no se realizó despliegue remoto. Sincronizado con el estado actual del proyecto y las reglas de planificación "Paso 3".
 
 - **Próximos pasos sugeridos:** Proceder al siguiente feature o tarea de limpieza siguiendo una arquitectura estricta MVC/Blueprints (Academia 4Geeks).
+
+### 📌 [2026-07-19] - Actualizar el archivo roadmap.md para los cambios recientes
+
+- **Insertado el:** 2026-07-19 15:30:00 CEST mientras se trabajaba en la rama Pruebas-IA
+- **Cambios Realizados:**
+  - Se actualizó el archivo `ROADMAP.md` para reflejar el último commit y las acciones realizadas.
+  - Se agregó una nueva entrada para los cambios recientes, incluyendo la creación del modelo de `Pokemon`, el cambio de nombres de endpoints y la configuración adicional del backend.
+- **Estado:** Completado localmente. No se ha realizado ningún despliegue remoto.
+- **Próximos Pasos Sugeridos:** Avance al siguiente feature o tarea de limpieza siguiendo una estructura estricta MVC/Blueprint (4Geeks Academy).
+- **Modelo de Lenguaje Utilizado:** qwen2.5-coder:7b con Context 8192 limitado por Ollama
 
 -->
