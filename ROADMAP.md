@@ -110,8 +110,15 @@ Next steps suggested:
   - Added a new entry for the most recent changes, including the creation of the `Pokemon` model, renaming of endpoints, and additional backend setup.
 - **Estado:** Completed locally. No remote deployment performed.
 - **Next steps suggested:** Proceed to next feature or cleanup task following strict MVC/Blueprint architecture (4Geeks Academy).
-
 - **Language Model Used:** qwen2.5-coder:7b with Context 8192 limited by Ollama
+
+### 📌 [2026-07-20 17:40:00 UTC] - Final Configuration of the 4 AI Models
+
+- **Inserted on:** 2026-07-20 17:40:00 CEST while working on the Pruebas-IA branch
+- **Changes Made:** Reconfiguration of the AI models in `config.yaml` to include four different models with their respective providers and configurations.
+  - Updated `config.yaml` File:\*\* Inclusion of details for the Qwen 2.5 Coder 7B (Chat), Gemma 4 E4B (Plan / Edit / Agent), DeepSeek R1 7B Spec (Bug Analyzer) and Qwen 1.5b Autocomplete Model.
+- **Status:** Completed locally. No remote deployment has been made.
+- **Suggested Next Steps:** Proceed to the next feature or cleaning task following a strict MVC/Blueprint structure (4Geeks Academy).
 
 # <!--
 
@@ -211,14 +218,11 @@ Desarrollar una aplicación de pruebas full-stack (Flask + React) que consuma da
 
 - **Próximos pasos sugeridos:** Proceder al siguiente feature o tarea de limpieza siguiendo una arquitectura estricta MVC/Blueprints (Academia 4Geeks).
 
-### 📌 [2026-07-19] - Actualizar el archivo roadmap.md para los cambios recientes
+### 📌 [2026-07-20 17:40:00 UTC] - Config final de los 4 Models IA
 
-- **Insertado el:** 2026-07-19 15:30:00 CEST mientras se trabajaba en la rama Pruebas-IA
-- **Cambios Realizados:**
-  - Se actualizó el archivo `ROADMAP.md` para reflejar el último commit y las acciones realizadas.
-  - Se agregó una nueva entrada para los cambios recientes, incluyendo la creación del modelo de `Pokemon`, el cambio de nombres de endpoints y la configuración adicional del backend.
-- **Estado:** Completado localmente. No se ha realizado ningún despliegue remoto.
-- **Próximos Pasos Sugeridos:** Avance al siguiente feature o tarea de limpieza siguiendo una estructura estricta MVC/Blueprint (4Geeks Academy).
-- **Modelo de Lenguaje Utilizado:** qwen2.5-coder:7b con Context 8192 limitado por Ollama
-
--->
+- **Insertado el:** 2026-07-20 17:40:00 CEST mientras se trabajaba en la rama Pruebas-IA
+- **Cambios realizados:** Reconfiguración de los modelos IA en `config.yaml` para incluir cuatro diferentes modelos con sus respectivos proveedores y configuraciones.
+  - Actualización del archivo `config.yaml`:\*\* Inclusión de detalles de los modelos Qwen 2.5 Coder 7B (Chat), Gemma 4 E4B (Plan / Edit / Agent), DeepSeek R1 7B Spec (Analizador de Bugs) y Qwen 1.5b Autocomplete Model.
+- **Estado:** Completado localmente. No se ha realizado despliegue remoto.
+- **Próximos pasos sugeridos:** Proceder al siguiente feature o tarea de limpieza siguiendo una estructura estricta MVC/Blueprint (4Geeks Academy).
+  -->
