@@ -211,6 +211,19 @@ def get_all_pokemon():
     return jsonify(list(map(lambda p: p.serialize(), pokemon_list))), 200
 
 
+@app.route('/pokemon/<int:person_id>', methods=['GET'])
+def get_pokemon_by_id(person_id):
+    # Buscamos el Pokémon en la base de datos usando su ID
+    pokemon = Pokemon.query.get(person_id)
+
+    # Si el Pokémon no existe, devolvemos un error 404
+    if pokemon is None:
+        return jsonify({"msg": f"Pokémon with id {person_id} not found"}), 404
+
+    # Si existe, lo serializamos y lo devolvemos con un estado 200
+    return jsonify(pokemon.serialize()), 200
+
+
 @app.route('/pokemon', methods=['POST'])
 def create_pokemon():
     # 1. Obtener los datos en formato JSON enviados desde Postman
@@ -284,6 +297,37 @@ def delete_pokemon(person_id):
         db.session.rollback()
         raise APIException(
             f"Error interno al eliminar el personaje: {str(e)}", status_code=500)
+
+
+@app.route('/pokemon/<int:person_id>', methods=['PUT'])
+def update_pokemon(person_id):
+    body = request.get_json()
+
+    if body is None:
+        raise APIException(
+            "Debes incluir el cuerpo (body) en formato JSON", status_code=400)
+
+    if 'people_name' not in body or body['people_name'].strip() == "":
+        raise APIException(
+            "El campo 'people_name' es obligatorio y no puede estar vacío", status_code=400)
+
+    pokemon = Pokemon.query.get(person_id)
+    if pokemon is None:
+        return jsonify({"msg": f"Pokémon with id {person_id} not found"}), 404
+
+    try:
+        pokemon.people_name = body['people_name']
+
+        db.session.commit()
+
+        return jsonify({
+            "message": "Pokémon actualizado con éxito",
+            "results": pokemon.serialize()
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        raise APIException(f"Error interno: {str(e)}", status_code=500)
 
 
 # this only runs if `$ python src/app.py` is executed
