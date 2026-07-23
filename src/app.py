@@ -9,6 +9,14 @@ from utils import APIException, generate_sitemap
 from admin import setup_admin
 from models import db, User, Pokemon
 from sqlalchemy import select, insert, delete
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
+
+try:
+    from blueprints.users_bp import users_bp
+    from blueprints.pokemon_bp import pokemon_bp
+except ModuleNotFoundError:
+    users_bp = None
+    pokemon_bp = None
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -34,6 +42,11 @@ db.init_app(app)
 CORS(app)
 setup_admin(app)
 
+if users_bp is not None:
+    app.register_blueprint(users_bp)
+if pokemon_bp is not None:
+    app.register_blueprint(pokemon_bp)
+
 # Handle/serialize errors like a JSON object
 
 
@@ -47,6 +60,55 @@ def handle_invalid_usage(error):
 @app.route('/')
 def sitemap():
     return generate_sitemap(app)
+
+
+@app.route("/signup", methods=["POST"])
+def handle_signup():
+    email = request.json.get("email", None)
+    password = request.json.get("password", None)
+    # 1. Verificar si el usuario ya existe
+    user_exists = db.session.execute(select(User).where(
+        User.email == email)).scalar_one_or_none()
+    if user_exists is not None:
+        return jsonify({"msg": "Email already exists"}), 409
+    # 2. Crear y guardar el nuevo usuario
+    new_user = User(email=email, password=password, is_active=True)
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify({"msg": "User created successfully"}), 201
+
+# Crea una ruta para autenticar a los usuarios y devolver el token JWT
+# La función create_access_token() se utiliza para generar el JWT
+
+
+@app.route("/login", methods=["POST"])
+def create_token():
+    email = request.json.get("email", None)
+    password = request.json.get("password", None)
+
+    # Consulta la base de datos por el nombre de usuario y la contraseña
+    user = db.session.execute(select(User).where(
+        User.email == email, User.password == password)).scalar_one_or_none()
+    if user is None:
+        return jsonify({"msg": "Bad username or password"}), 401
+
+    # Crea un nuevo token con el id de usuario dentro
+    access_token = create_access_token(identity=str(user.id))
+    return jsonify({"token": access_token, "user_id": user.id})
+
+
+# Protege una ruta con jwt_required, bloquea las peticiones sin un JWT válido
+@app.route("/demo", methods=["GET"])
+@jwt_required()
+def protected():
+    # Accede a la identidad del usuario actual
+    current_user_id = get_jwt_identity()
+    user = db.session.get(User, int(current_user_id))
+
+    if user is None:
+        return jsonify({"msg": "Usuario no encontrado"}), 404
+
+    return jsonify({"id": user.id, "email": user.email}), 200
 
 
 @app.route('/user', methods=['GET'])
@@ -108,6 +170,10 @@ def create_user():
     if 'password' not in body or body['password'].strip() == "":
         raise APIException(
             "El campo 'password' es obligatorio", status_code=400)
+
+    if 'is_active' not in body:
+        raise APIException(
+            "El campo 'is_active' es obligatorio", status_code=400)
 
     # 4. Verificar si ya existe un usuario con ese mismo email
     exist_user = User.query.filter_by(email=body['email']).first()
