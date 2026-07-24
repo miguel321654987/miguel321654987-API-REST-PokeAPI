@@ -39,30 +39,30 @@ def create_pokemon():
         raise APIException(
             "Debes incluir el cuerpo (body) en formato JSON", status_code=400)
 
-    # 3. Validar que el campo obligatorio 'people_name' exista en el JSON
-    if 'people_name' not in body or body['people_name'].strip() == "":
+    # 3. Validar que el campo obligatorio 'pokemon_name' exista en el JSON
+    if 'pokemon_name' not in body or body['pokemon_name'].strip() == "":
         raise APIException(
-            "El campo 'people_name' es obligatorio y no puede estar vacío", status_code=400)
+            "El campo 'pokemon_name' es obligatorio y no puede estar vacío", status_code=400)
 
     # 4. Verificar si ya existe un Pokémon con ese mismo nombre (para evitar errores en la base de datos)
-    exist_person = Pokemon.query.filter_by(
-        people_name=body['people_name']).first()
-    if exist_person is not None:
+    exist_pokemon = Pokemon.query.filter_by(
+        pokemon_name=body['pokemon_name']).first()
+    if exist_pokemon is not None:
         raise APIException(
-            f"El personaje '{body['people_name']}' ya existe en la base de datos", status_code=400)
+            f"El Pokémon '{body['pokemon_name']}' ya existe en la base de datos", status_code=400)
 
     try:
         # 5. Crear la nueva instancia de nuestro modelo Pokemon
-        new_person = Pokemon(people_name=body['people_name'])
+        new_pokemon = Pokemon(pokemon_name=body['pokemon_name'])
 
         # 6. Guardar el nuevo registro en la base de datos PostgreSQL
-        db.session.add(new_person)
+        db.session.add(new_pokemon)
         db.session.commit()
 
-        # 7. Responder al cliente con el personaje creado serializado y un estado 201 (Created)
+        # 7. Responder al cliente con el Pokémon creado serializado y un estado 201 (Created)
         return jsonify({
-            "message": "Personaje creado con éxito",
-            "results": new_person.serialize()
+            "message": "Pokémon creado con éxito",
+            "results": new_pokemon.serialize()
         }), 201
 
     except Exception as e:
@@ -93,7 +93,7 @@ def delete_pokemon(person_id):
 
         # 4. Responder al cliente que el borrado fue exitoso
         return jsonify({
-            "message": f"Personaje '{pokemon.people_name}' eliminado con éxito",
+            "message": f"Pokémon '{pokemon.pokemon_name}' eliminado con éxito",
             "id_deleted": person_id
         }), 200
 
@@ -101,7 +101,7 @@ def delete_pokemon(person_id):
         # En caso de error, hacemos rollback para no dejar la sesión en un estado corrupto
         db.session.rollback()
         raise APIException(
-            f"Error interno al eliminar el personaje: {str(e)}", status_code=500)
+            f"Error interno al eliminar el Pokémon: {str(e)}", status_code=500)
 
 
 @pokemon_bp.route('/pokemon/<int:person_id>', methods=['PUT'])
@@ -112,16 +112,16 @@ def update_pokemon(person_id):
         raise APIException(
             "Debes incluir el cuerpo (body) en formato JSON", status_code=400)
 
-    if 'people_name' not in body or body['people_name'].strip() == "":
+    if 'pokemon_name' not in body or body['pokemon_name'].strip() == "":
         raise APIException(
-            "El campo 'people_name' es obligatorio y no puede estar vacío", status_code=400)
+            "El campo 'pokemon_name' es obligatorio y no puede estar vacío", status_code=400)
 
     pokemon = Pokemon.query.get(person_id)
     if pokemon is None:
         return jsonify({"msg": f"Pokémon with id {person_id} not found"}), 404
 
     try:
-        pokemon.people_name = body['people_name']
+        pokemon.pokemon_name = body['pokemon_name']
 
         db.session.commit()
 

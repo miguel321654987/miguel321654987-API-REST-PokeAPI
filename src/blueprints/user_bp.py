@@ -64,27 +64,29 @@ def get_all_users():
         # 1. Consultar todos los usuarios en la base de datos
         users_query = User.query.all()
 
-        # 2. Si la base de datos está vacía, podemos avisar o devolver una lista vacía
+        # 2. Si la base de datos está vacía, devolvemos una lista vacía de forma segura
         if not users_query:
             return jsonify({
                 "message": "No se encontraron usuarios en la base de datos",
                 "results": []
             }), 200
 
-        # 3. Mapear y serializar cada usuario usando el método de tu modelo User
-        # Esto convierte los objetos de Python en diccionarios legibles
+        # 3. Mapear y serializar cada usuario
         all_users = list(map(lambda user: user.serialize(), users_query))
 
-        # 4. Devolver la lista con todos los usuarios y un estado 200 OK
+        # 4. Devolver la lista con todos los usuarios
         return jsonify({
             "message": "Usuarios obtenidos con éxito",
             "results": all_users,
-            "total_users": len(all_users)  # Añadimos información útil extra
+            "total_users": len(all_users)
         }), 200
 
     except Exception as e:
-        raise APIException(
-            f"Error interno al obtener los usuarios: {str(e)}", status_code=500)
+        # CORRECCIÓN: En lugar de usar 'raise' de golpe en el Blueprint,
+        # devolvemos un jsonify estructurado directamente para que Postman te diga el error real
+        return jsonify({
+            "msg": f"Error interno al obtener los usuarios: {str(e)}"
+        }), 500
 
 
 @user_bp.route('/user/<int:user_id>', methods=['GET'])
