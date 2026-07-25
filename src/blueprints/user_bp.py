@@ -115,56 +115,6 @@ def get_user_by_id(user_id):
     return jsonify(user.serialize()), 200
 
 
-@user_bp.route('/user', methods=['POST'])
-def create_user():
-    body = request.get_json()
-
-    # 2. Validar que el cuerpo de la petición no esté vacío
-    if body is None:
-        raise APIException(
-            "Debes incluir el cuerpo (body) en formato JSON", status_code=400)
-
-    # 3. Validación estricto de campos requeridos del modelo User
-    email = body.get('email')
-    password = body.get('password')
-
-    if not email or not isinstance(email, str) or email.strip() == "":
-        raise APIException("El campo 'email' es obligatorio", status_code=400)
-
-    if not password or not isinstance(password, str) or password.strip() == "":
-        raise APIException(
-            "El campo 'password' es obligatorio", status_code=400)
-
-    # 4. Verificar si ya existe un usuario con ese mismo email
-    exist_user = User.query.filter_by(email=body['email']).first()
-    if exist_user is not None:
-        raise APIException(
-            f"El usuario con el email '{body['email']}' ya existe", status_code=400)
-
-    try:
-        # 5. Crear la nueva instancia de nuestro modelo User
-        new_user = User(
-            email=body['email'],
-            password=body['password'],
-            is_active=True
-        )
-
-        # 6. Guardar el nuevo registro en la base de datos
-        db.session.add(new_user)
-        db.session.commit()
-
-        # 7. Responder con el usuario creado (serializado, sin la contraseña)
-        return jsonify({
-            "message": "Usuario creado con éxito",
-            "results": new_user.serialize()
-        }), 201
-
-    except Exception as e:
-        db.session.rollback()
-        raise APIException(
-            f"Error interno del servidor: {str(e)}", status_code=500)
-
-
 @user_bp.route('/user/<int:user_id>', methods=['DELETE'])
 def delete_user(user_id):
     # 1. Buscar el usuario en la base de datos usando su ID
