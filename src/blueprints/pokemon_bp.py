@@ -53,7 +53,8 @@ def create_pokemon():
 
     try:
         # 5. Crear la nueva instancia de nuestro modelo Pokemon
-        new_pokemon = Pokemon(pokemon_name=body['pokemon_name'])
+        new_pokemon = Pokemon(
+            pokemon_name=body['pokemon_name'], is_active=True)
 
         # 6. Guardar el nuevo registro en la base de datos PostgreSQL
         db.session.add(new_pokemon)
