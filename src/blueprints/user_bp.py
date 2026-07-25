@@ -11,13 +11,22 @@ user_bp = Blueprint('User', __name__)
 
 @user_bp.route("/signup", methods=["POST"])
 def handle_signup():
-    email = request.json.get("email", None)
-    password = request.json.get("password", None)
+    email = request.json.get("email")
+    password = request.json.get("password")
+
+    # Validaciones estrictas de campos requeridos para un nuevo usuario
+    if not email or not isinstance(email, str) or email.strip() == "":
+        raise APIException("El campo 'email' es obligatorio", status_code=400)
+    if not password or not isinstance(password, str) or password.strip() == "":
+        raise APIException(
+            "El campo 'password' es obligatorio", status_code=400)
+
     # 1. Verificar si el usuario ya existe
     user_exists = db.session.execute(select(User).where(
         User.email == email)).scalar_one_or_none()
     if user_exists is not None:
         return jsonify({"msg": "Email already exists"}), 409
+
     # 2. Crear y guardar el nuevo usuario
     new_user = User(email=email, password=password, is_active=True)
     db.session.add(new_user)
@@ -54,6 +63,10 @@ def protected():
 
     if user is None:
         return jsonify({"msg": "Usuario no encontrado"}), 404
+
+    # VALIDACIÓN DE ESTADO: Si el usuario está inactivo, denegar acceso (Status 403)
+    if not user.is_active:
+        return jsonify({"msg": "Acceso denegado: Tu cuenta ha sido desactivada."}), 403
 
     return jsonify({"id": user.id, "email": user.email}), 200
 
@@ -104,7 +117,6 @@ def get_user_by_id(user_id):
 
 @user_bp.route('/user', methods=['POST'])
 def create_user():
-    # 1. Obtener los datos en formato JSON enviados desde Postman
     body = request.get_json()
 
     # 2. Validar que el cuerpo de la petición no esté vacío
@@ -112,17 +124,16 @@ def create_user():
         raise APIException(
             "Debes incluir el cuerpo (body) en formato JSON", status_code=400)
 
-    # 3. Validar los campos obligatorios del modelo User
-    if 'email' not in body or body['email'].strip() == "":
+    # 3. Validación estricto de campos requeridos del modelo User
+    email = body.get('email')
+    password = body.get('password')
+
+    if not email or not isinstance(email, str) or email.strip() == "":
         raise APIException("El campo 'email' es obligatorio", status_code=400)
 
-    if 'password' not in body or body['password'].strip() == "":
+    if not password or not isinstance(password, str) or password.strip() == "":
         raise APIException(
             "El campo 'password' es obligatorio", status_code=400)
-
-    if 'is_active' not in body:
-        raise APIException(
-            "El campo 'is_active' es obligatorio", status_code=400)
 
     # 4. Verificar si ya existe un usuario con ese mismo email
     exist_user = User.query.filter_by(email=body['email']).first()
@@ -132,14 +143,10 @@ def create_user():
 
     try:
         # 5. Crear la nueva instancia de nuestro modelo User
-        # Tomamos 'is_active' del body, si no viene enviado, por defecto será True
-        is_active_value = body.get('is_active', True)
-
         new_user = User(
             email=body['email'],
-            # Nota: En un proyecto real aquí se encriptaría la contraseña
             password=body['password'],
-            is_active=is_active_value
+            is_active=True
         )
 
         # 6. Guardar el nuevo registro en la base de datos
@@ -177,7 +184,6 @@ def delete_user(user_id):
         # 5. Responder con un mensaje de éxito y un estado 200 OK
         return jsonify({
             "message": f"Usuario con id {user_id} eliminado con éxito",
-            # Opcional: devolvemos los datos del usuario borrado
             "deleted_user": user.serialize()
         }), 200
 
@@ -190,8 +196,10 @@ def delete_user(user_id):
 
 @user_bp.route('/user/<int:user_id>', methods=['PUT'])
 def update_user(user_id):
-    # 1. Obtener los datos del JSON
     body = request.get_json()
+
+    if body is None:
+        raise APIException("Debes enviar un cuerpo JSON", status_code=400)
 
     # 2. Buscar al usuario por su ID
     user = User.query.get(user_id)
@@ -199,10 +207,19 @@ def update_user(user_id):
         return jsonify({"msg": f"User with id {user_id} not found"}), 404
 
     try:
-        # 3. Modificar directamente los campos con los nuevos valores del body
-        user.email = body.get('email', user.email)
-        user.password = body.get('password', user.password)
-        user.is_active = body.get('is_active', user.is_active)
+        email = body.get('email')
+        password = body.get('password')
+
+        # Validación de campos que pueden ser actualizados (si están presentes en el cuerpo)
+        if email is not None and (not isinstance(email, str) or email.strip() == ""):
+            raise APIException(
+                "El campo 'email' es inválido o vacío", status_code=400)
+
+        # 3. Actualizar campos de forma segura (solo actualizamos si el cliente envió datos válidos para ellos)
+        if email is not None:
+            user.email = email
+        if password is not None:
+            user.password = password
 
         # 4. Guardar los cambios en la base de datos
         db.session.commit()
@@ -213,6 +230,10 @@ def update_user(user_id):
             "results": user.serialize()
         }), 200
 
+    except APIException as e:
+        db.session.rollback()
+        raise e  # Relanzar la excepción manejada por el framework
     except Exception as e:
         db.session.rollback()
-        raise APIException(f"Error interno: {str(e)}", status_code=500)
+        raise APIException(
+            f"Error interno al actualizar usuario: {str(e)}", status_code=500)
