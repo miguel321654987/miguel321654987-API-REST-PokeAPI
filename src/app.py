@@ -9,12 +9,16 @@ from utils import APIException, generate_sitemap
 from admin import setup_admin
 from models import db, User, Pokemon
 from sqlalchemy import select, insert, delete
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
 from blueprints.user_bp import user_bp
 from blueprints.pokemon_bp import pokemon_bp
 
 
 app = Flask(__name__)
+
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
+jwt = JWTManager(app)
+
 app.url_map.strict_slashes = False
 
 db_url = os.getenv("DATABASE_URL")
