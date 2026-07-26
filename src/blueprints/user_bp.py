@@ -73,33 +73,20 @@ def protected():
 
 @user_bp.route('/user', methods=['GET'])
 def get_all_users():
-    try:
-        # 1. Consultar todos los usuarios en la base de datos
-        users_query = User.query.all()
+    users_query = User.query.all()
 
-        # 2. Si la base de datos está vacía, devolvemos una lista vacía de forma segura
-        if not users_query:
-            return jsonify({
-                "message": "No se encontraron usuarios en la base de datos",
-                "results": []
-            }), 200
-
-        # 3. Mapear y serializar cada usuario
-        all_users = list(map(lambda user: user.serialize(), users_query))
-
-        # 4. Devolver la lista con todos los usuarios
+    if not users_query:
         return jsonify({
-            "message": "Usuarios obtenidos con éxito",
-            "results": all_users,
-            "total_users": len(all_users)
+            "message": "No se encontraron usuarios en la base de datos",
+            "results": []
         }), 200
 
-    except Exception as e:
-        # CORRECCIÓN: En lugar de usar 'raise' de golpe en el Blueprint,
-        # devolvemos un jsonify estructurado directamente para que Postman te diga el error real
-        return jsonify({
-            "msg": f"Error interno al obtener los usuarios: {str(e)}"
-        }), 500
+    all_users = list(map(lambda user: user.serialize(), users_query))
+    return jsonify({
+        "message": "Usuarios obtenidos con éxito",
+        "results": all_users,
+        "total_users": len(all_users)
+    }), 200
 
 
 @user_bp.route('/user/<int:user_id>', methods=['GET'])
@@ -117,73 +104,52 @@ def get_user_by_id(user_id):
 
 @user_bp.route('/user/<int:user_id>', methods=['DELETE'])
 def delete_user(user_id):
-    # 1. Buscar el usuario en la base de datos usando su ID
     user = User.query.get(user_id)
-
-    # 2. Si el usuario no existe, devolvemos un error 404 (siguiendo tu patrón de get_user_by_id)
     if user is None:
         return jsonify({"msg": f"User with id {user_id} not found"}), 404
 
     try:
-        # 3. Eliminar el registro de la sesión de la base de datos
         db.session.delete(user)
-
-        # 4. Confirmar y guardar los cambios en la base de datos
         db.session.commit()
-
-        # 5. Responder con un mensaje de éxito y un estado 200 OK
         return jsonify({
             "message": f"Usuario con id {user_id} eliminado con éxito",
             "deleted_user": user.serialize()
         }), 200
-
-    except Exception as e:
-        # 6. Si ocurre un error, hacemos rollback para no corromper la base de datos
+    except Exception:
         db.session.rollback()
-        raise APIException(
-            f"Error interno al intentar eliminar el usuario: {str(e)}", status_code=500)
+        raise  # Deja que el error suba limpio a app.py para que devuelva el 500
 
 
 @user_bp.route('/user/<int:user_id>', methods=['PUT'])
 def update_user(user_id):
     body = request.get_json()
-
     if body is None:
         raise APIException("Debes enviar un cuerpo JSON", status_code=400)
 
-    # 2. Buscar al usuario por su ID
     user = User.query.get(user_id)
     if user is None:
         return jsonify({"msg": f"User with id {user_id} not found"}), 404
 
+    email = body.get('email')
+    password = body.get('password')
+
+    # 1. PASO EXCLUSIVO DE VALIDACIONES (Fuera del try)
+    if email is not None and (not isinstance(email, str) or email.strip() == ""):
+        raise APIException(
+            "El campo 'email' es inválido o vacío", status_code=400)
+
+    # 2. PASO DE ASIGNACIÓN Y GUARDADO (Dentro del try por si falla la Base de Datos)
+    if email is not None:
+        user.email = email
+    if password is not None:
+        user.password = password
+
     try:
-        email = body.get('email')
-        password = body.get('password')
-
-        # Validación de campos que pueden ser actualizados (si están presentes en el cuerpo)
-        if email is not None and (not isinstance(email, str) or email.strip() == ""):
-            raise APIException(
-                "El campo 'email' es inválido o vacío", status_code=400)
-
-        # 3. Actualizar campos de forma segura (solo actualizamos si el cliente envió datos válidos para ellos)
-        if email is not None:
-            user.email = email
-        if password is not None:
-            user.password = password
-
-        # 4. Guardar los cambios en la base de datos
         db.session.commit()
-
-        # 5. Responder con éxito
         return jsonify({
             "message": "Usuario actualizado con éxito",
             "results": user.serialize()
         }), 200
-
-    except APIException as e:
+    except Exception:
         db.session.rollback()
-        raise e  # Relanzar la excepción manejada por el framework
-    except Exception as e:
-        db.session.rollback()
-        raise APIException(
-            f"Error interno al actualizar usuario: {str(e)}", status_code=500)
+        raise  # Al relanzarlo, app.py se encarga de estructurar el JSON de error 500
