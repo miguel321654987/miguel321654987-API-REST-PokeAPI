@@ -10,103 +10,107 @@ pokemon_bp = Blueprint('Pokemon', __name__)
 
 @pokemon_bp.route('/pokemon', methods=['GET'])
 def get_all_pokemon():
-    # Obtenemos la lista de objetos Pokemon desde la base de datos
-    pokemon_list = db.session.execute(select(Pokemon)).scalars().all()
-    # Convertimos la lista de objetos a una lista de diccionarios usando map
-    return jsonify(list(map(lambda p: p.serialize(), pokemon_list))), 200
+    # Estilo SQLAlchemy 2.0: Usamos select y db.session.scalars()
+    stmt = select(Pokemon)
+    pokemon_query = db.session.scalars(stmt).all()
+
+    # Validamos si la lista está vacía
+    if not pokemon_query:
+        return jsonify({
+            "message": "No se encontraron Pokémon en la base de datos",
+            "results": []
+        }), 200
+
+    # Comprensión de listas: más limpio y rápido que map + lambda
+    all_pokemon = [pokemon.serialize() for pokemon in pokemon_query]
+
+    return jsonify({
+        "message": "Pokémon obtenidos con éxito",
+        "results": all_pokemon,
+        "total_pokemon": len(all_pokemon)
+    }), 200
 
 
-@pokemon_bp.route('/pokemon/<int:person_id>', methods=['GET'])
-def get_pokemon_by_id(person_id):
-    # CAMBIO: Usar db.session.get() en lugar de Pokemon.query.get()
-    pokemon = db.session.get(Pokemon, person_id)
+@pokemon_bp.route('/pokemon/<int:pokemon_id>', methods=['GET'])
+def get_pokemon_by_id(pokemon_id):
+    # CORRECCIÓN: Renombrado person_id a pokemon_id por coherencia semántica
+    pokemon = db.session.get(Pokemon, pokemon_id)
 
-    # Si el Pokémon no existe, devolvemos un error 404
+    # UNIFICADO: Lanza APIException para que lo capture el errorhandler de app.py
     if pokemon is None:
-        return jsonify({"msg": f"Pokémon with id {person_id} not found"}), 404
+        raise APIException(
+            f"El Pokémon con ID {pokemon_id} no fue encontrado", status_code=404)
 
-    # Si existe, lo serializamos y lo devolvemos con un estado 200
-    return jsonify(pokemon.serialize()), 200
+    # Estructura de respuesta exitosa consistente con el resto de la API
+    return jsonify({
+        "message": "Pokémon obtenido con éxito",
+        "results": pokemon.serialize()
+    }), 200
 
 
 @pokemon_bp.route('/pokemon', methods=['POST'])
 def create_pokemon():
-    # 1. Obtener los datos en formato JSON enviados desde Postman
     body = request.get_json()
 
-    # 2. Validar que el cuerpo de la petición no esté vacío
     if body is None:
         raise APIException(
             "Debes incluir el cuerpo (body) en formato JSON", status_code=400)
 
-    # 3. Validar que el campo obligatorio 'pokemon_name' exista en el JSON
     if 'pokemon_name' not in body or body['pokemon_name'].strip() == "":
         raise APIException(
             "El campo 'pokemon_name' es obligatorio y no puede estar vacío", status_code=400)
 
-    # 4. Verificar si ya existe un Pokémon con ese mismo nombre (para evitar errores en la base de datos)
-    exist_pokemon = Pokemon.query.filter_by(
-        pokemon_name=body['pokemon_name']).first()
+    # ACTUALIZACIÓN: Cambiado Pokemon.query.filter_by por select() estilo 2.0
+    stmt = select(Pokemon).filter_by(pokemon_name=body['pokemon_name'].strip())
+    exist_pokemon = db.session.scalars(stmt).first()
+
     if exist_pokemon is not None:
         raise APIException(
-            f"El Pokémon '{body['pokemon_name']}' ya existe en la base de datos", status_code=400)
+            f"El Pokémon '{body['pokemon_name'].strip()}' ya existe en la base de datos", status_code=400)
 
     try:
-        # 5. Crear la nueva instancia de nuestro modelo Pokemon
-        new_pokemon = Pokemon(
-            pokemon_name=body['pokemon_name'], is_active=True)
+        new_pokemon = Pokemon(pokemon_name=body['pokemon_name'].strip())
 
-        # 6. Guardar el nuevo registro en la base de datos PostgreSQL
         db.session.add(new_pokemon)
         db.session.commit()
 
-        # 7. Responder al cliente con el Pokémon creado serializado y un estado 201 (Created)
         return jsonify({
             "message": "Pokémon creado con éxito",
             "results": new_pokemon.serialize()
         }), 201
 
     except Exception as e:
-        # En caso de un fallo inesperado del servidor o base de datos, revertimos los cambios
         db.session.rollback()
         raise APIException(
-            f"Error interno del servidor: {str(e)}", status_code=500)
+            f"Error interno del servidor al crear el Pokémon: {str(e)}", status_code=500)
 
 
-@pokemon_bp.route('/pokemon/<int:person_id>', methods=['DELETE'])
-def delete_pokemon(person_id):
-    # 1. Buscar el Pokémon en la base de datos por su ID utilizando select
-    pokemon = db.session.execute(select(Pokemon).filter_by(
-        id=person_id)).scalar_one_or_none()
+@pokemon_bp.route('/pokemon/<int:pokemon_id>', methods=['DELETE'])
+def delete_pokemon(pokemon_id):
+    # ACTUALIZACIÓN: db.session.get() es el estándar 2.0 para buscar por ID
+    pokemon = db.session.get(Pokemon, pokemon_id)
 
-    # También puedes usar la sintaxis clásica si no tienes el 'select' importado de esa forma:
-    # person = Pokemon.query.get(person_id)
-
-    # 2. Validar si el Pokémon existe
     if pokemon is None:
         raise APIException(
-            f"El personaje con ID {person_id} no existe", status_code=404)
+            f"El Pokémon con ID {pokemon_id} no existe", status_code=404)
 
     try:
-        # 3. Eliminar el registro de la sesión y confirmar el cambio
         db.session.delete(pokemon)
         db.session.commit()
 
-        # 4. Responder al cliente que el borrado fue exitoso
         return jsonify({
             "message": f"Pokémon '{pokemon.pokemon_name}' eliminado con éxito",
-            "id_deleted": person_id
+            "id_deleted": pokemon_id
         }), 200
 
     except Exception as e:
-        # En caso de error, hacemos rollback para no dejar la sesión en un estado corrupto
         db.session.rollback()
         raise APIException(
             f"Error interno al eliminar el Pokémon: {str(e)}", status_code=500)
 
 
-@pokemon_bp.route('/pokemon/<int:person_id>', methods=['PUT'])
-def update_pokemon(person_id):
+@pokemon_bp.route('/pokemon/<int:pokemon_id>', methods=['PUT'])
+def update_pokemon(pokemon_id):
     body = request.get_json()
 
     if body is None:
@@ -117,13 +121,15 @@ def update_pokemon(person_id):
         raise APIException(
             "El campo 'pokemon_name' es obligatorio y no puede estar vacío", status_code=400)
 
-    pokemon = Pokemon.query.get(person_id)
+    pokemon = db.session.get(Pokemon, pokemon_id)
+
+    # UNIFICADO: Lanza APIException en lugar de retornar un jsonify manual
     if pokemon is None:
-        return jsonify({"msg": f"Pokémon with id {person_id} not found"}), 404
+        raise APIException(
+            f"El Pokémon con ID {pokemon_id} no fue encontrado", status_code=404)
 
     try:
-        pokemon.pokemon_name = body['pokemon_name']
-
+        pokemon.pokemon_name = body['pokemon_name'].strip()
         db.session.commit()
 
         return jsonify({
@@ -133,4 +139,5 @@ def update_pokemon(person_id):
 
     except Exception as e:
         db.session.rollback()
-        raise APIException(f"Error interno: {str(e)}", status_code=500)
+        raise APIException(
+            f"Error interno al actualizar el Pokémon: {str(e)}", status_code=500)
