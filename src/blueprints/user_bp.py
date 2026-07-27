@@ -11,8 +11,13 @@ user_bp = Blueprint('User', __name__)
 
 @user_bp.route("/signup", methods=["POST"])
 def handle_signup():
-    email = request.json.get("email")
-    password = request.json.get("password")
+    body = request.get_json()
+    if body is None:
+        raise APIException(
+            "Debes incluir el cuerpo (body) en formato JSON", status_code=400)
+
+    email = body.get("email")
+    password = body.get("password")
 
     # Validaciones estrictas de campos requeridos para un nuevo usuario
     if not email or not isinstance(email, str) or email.strip() == "":
@@ -21,39 +26,65 @@ def handle_signup():
         raise APIException(
             "El campo 'password' es obligatorio", status_code=400)
 
-    # 1. Verificar si el usuario ya existe
-    user_exists = db.session.execute(select(User).where(
-        User.email == email)).scalar_one_or_none()
+    # 1. Verificar si el usuario ya existe (SQLAlchemy 2.0 style)
+    stmt = select(User).where(User.email == email.strip())
+    user_exists = db.session.execute(stmt).scalar_one_or_none()
+
     if user_exists is not None:
-        return jsonify({"msg": "Email already exists"}), 409
+        raise APIException(
+            "El correo electrónico ya está registrado", status_code=409)
 
-    # 2. Crear y guardar el nuevo usuario
-    new_user = User(email=email, password=password, is_active=True)
-    db.session.add(new_user)
-    db.session.commit()
-    return jsonify({"msg": "User created successfully"}), 201
+    try:
+        # 2. Crear y guardar el nuevo usuario
+        new_user = User(email=email.strip(),
+                        password=password.strip(), is_active=True)
+        db.session.add(new_user)
+        db.session.commit()
 
-# Crea una ruta para autenticar a los usuarios y devolver el token JWT
-# La función create_access_token() se utiliza para generar el JWT
+        return jsonify({
+            "message": "Usuario creado con éxito",
+            "results": new_user.serialize()
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        raise APIException(
+            f"Error interno del servidor al crear el usuario: {str(e)}", status_code=500)
 
 
 @user_bp.route("/login", methods=["POST"])
 def create_token():
-    email = request.json.get("email", None)
-    password = request.json.get("password", None)
+    body = request.get_json()
+    if body is None:
+        raise APIException(
+            "Debes incluir el cuerpo (body) en formato JSON", status_code=400)
 
-    # Consulta la base de datos por el nombre de usuario y la contraseña
-    user = db.session.execute(select(User).where(
-        User.email == email, User.password == password)).scalar_one_or_none()
+    email = body.get("email")
+    password = body.get("password")
+
+    if not email or not password:
+        raise APIException(
+            "Los campos 'email' y 'password' son requeridos", status_code=400)
+
+    # Consulta la base de datos con SQLAlchemy 2.0 style
+    stmt = select(User).where(User.email == email.strip(),
+                              User.password == password.strip())
+    user = db.session.execute(stmt).scalar_one_or_none()
+
     if user is None:
-        return jsonify({"msg": "Bad username or password"}), 401
+        raise APIException(
+            "Credenciales inválidas. Email o contraseña incorrectos", status_code=401)
 
     # Crea un nuevo token con el id de usuario dentro
     access_token = create_access_token(identity=str(user.id))
-    return jsonify({"token": access_token, "user_id": user.id})
+
+    return jsonify({
+        "message": "Autenticación exitosa",
+        "token": access_token,
+        "user_id": user.id
+    }), 200
 
 
-# Protege una ruta con jwt_required, bloquea las peticiones sin un JWT válido
 @user_bp.route("/demo", methods=["GET"])
 @jwt_required()
 def protected():
@@ -62,26 +93,35 @@ def protected():
     user = db.session.get(User, int(current_user_id))
 
     if user is None:
-        return jsonify({"msg": "Usuario no encontrado"}), 404
+        raise APIException("Usuario no encontrado", status_code=404)
 
     # VALIDACIÓN DE ESTADO: Si el usuario está inactivo, denegar acceso (Status 403)
     if not user.is_active:
-        return jsonify({"msg": "Acceso denegado: Tu cuenta ha sido desactivada."}), 403
+        raise APIException(
+            "Acceso denegado: Tu cuenta ha sido desactivada.", status_code=403)
 
-    return jsonify({"id": user.id, "email": user.email}), 200
+    return jsonify({
+        "message": "Acceso concedido a ruta protegida",
+        "results": {"id": user.id, "email": user.email}
+    }), 200
 
 
 @user_bp.route('/user', methods=['GET'])
 def get_all_users():
-    users_query = User.query.all()
+    # Usando select() y scalars() estilo SQLAlchemy 2.0
+    stmt = select(User)
+    users_query = db.session.scalars(stmt).all()
 
+    # Validamos si la lista está vacía
     if not users_query:
         return jsonify({
             "message": "No se encontraron usuarios en la base de datos",
             "results": []
         }), 200
 
-    all_users = list(map(lambda user: user.serialize(), users_query))
+    # Convertimos la lista de objetos a diccionarios mediante comprensión de listas
+    all_users = [user.serialize() for user in users_query]
+
     return jsonify({
         "message": "Usuarios obtenidos con éxito",
         "results": all_users,
@@ -91,65 +131,78 @@ def get_all_users():
 
 @user_bp.route('/user/<int:user_id>', methods=['GET'])
 def get_user_by_id(user_id):
-    # Buscamos el usuario en la base de datos usando su ID
-    user = User.query.get(user_id)
+    # ACTUALIZACIÓN: db.session.get() para buscar por clave primaria
+    user = db.session.get(User, user_id)
 
-    # Si el usuario no existe, devolvemos un error 404
     if user is None:
-        return jsonify({"msg": f"User with id {user_id} not found"}), 404
+        raise APIException(
+            f"El usuario con ID {user_id} no fue encontrado", status_code=404)
 
-    # Si existe, lo serializamos y lo devolvemos con un estado 200
-    return jsonify(user.serialize()), 200
+    return jsonify({
+        "message": "Usuario obtenido con éxito",
+        "results": user.serialize()
+    }), 200
 
 
 @user_bp.route('/user/<int:user_id>', methods=['DELETE'])
 def delete_user(user_id):
-    user = User.query.get(user_id)
+    # ACTUALIZACIÓN: db.session.get() en lugar de User.query.get()
+    user = db.session.get(User, user_id)
+
     if user is None:
-        return jsonify({"msg": f"User with id {user_id} not found"}), 404
+        raise APIException(
+            f"El usuario con ID {user_id} no existe", status_code=404)
 
     try:
         db.session.delete(user)
         db.session.commit()
+
         return jsonify({
-            "message": f"Usuario con id {user_id} eliminado con éxito",
-            "deleted_user": user.serialize()
+            "message": f"Usuario con ID {user_id} eliminado con éxito",
+            "id_deleted": user_id
         }), 200
-    except Exception:
+
+    except Exception as e:
         db.session.rollback()
-        raise  # Deja que el error suba limpio a app.py para que devuelva el 500
+        raise APIException(
+            f"Error interno al eliminar el usuario: {str(e)}", status_code=500)
 
 
 @user_bp.route('/user/<int:user_id>', methods=['PUT'])
 def update_user(user_id):
     body = request.get_json()
     if body is None:
-        raise APIException("Debes enviar un cuerpo JSON", status_code=400)
+        raise APIException(
+            "Debes incluir el cuerpo (body) en formato JSON", status_code=400)
 
-    user = User.query.get(user_id)
+    # ACTUALIZACIÓN: db.session.get() en lugar de User.query.get()
+    user = db.session.get(User, user_id)
     if user is None:
-        return jsonify({"msg": f"User with id {user_id} not found"}), 404
+        raise APIException(
+            f"El usuario con ID {user_id} no fue encontrado", status_code=404)
 
     email = body.get('email')
     password = body.get('password')
 
-    # 1. PASO EXCLUSIVO DE VALIDACIONES (Fuera del try)
+    # Validaciones previas a la asignación
     if email is not None and (not isinstance(email, str) or email.strip() == ""):
         raise APIException(
-            "El campo 'email' es inválido o vacío", status_code=400)
-
-    # 2. PASO DE ASIGNACIÓN Y GUARDADO (Dentro del try por si falla la Base de Datos)
-    if email is not None:
-        user.email = email
-    if password is not None:
-        user.password = password
+            "El campo 'email' es inválido o está vacío", status_code=400)
 
     try:
+        if email is not None:
+            user.email = email.strip()
+        if password is not None:
+            user.password = password.strip()
+
         db.session.commit()
+
         return jsonify({
             "message": "Usuario actualizado con éxito",
             "results": user.serialize()
         }), 200
-    except Exception:
+
+    except Exception as e:
         db.session.rollback()
-        raise  # Al relanzarlo, app.py se encarga de estructurar el JSON de error 500
+        raise APIException(
+            f"Error interno al actualizar el usuario: {str(e)}", status_code=500)
