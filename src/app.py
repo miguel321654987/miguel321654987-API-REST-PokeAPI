@@ -5,13 +5,12 @@ import os
 from flask import Flask, jsonify, request, Blueprint
 from flask_migrate import Migrate
 from flask_cors import CORS
-from utils import APIException, generate_sitemap
-from admin import setup_admin
-from models import db, User, Pokemon
+from Backend.utils import APIException, generate_sitemap
+from Backend.admin import setup_admin
+from Backend.models import db
 from sqlalchemy import select, insert, delete
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
-from blueprints.user_bp import user_bp
-from blueprints.pokemon_bp import pokemon_bp
+from Backend.routes import api
 
 
 app = Flask(__name__)
@@ -42,11 +41,8 @@ setup_admin(app)
 
 
 # REGISTRO DE BLUEPRINTS
-# Todas las rutas de usuarios comenzarán con /auth (ej: /auth/login)
-app.register_blueprint(user_bp, url_prefix='/auth')
-
-# Todas las rutas de pokémon comenzarán con /api (ej: /api/pokemon)
-app.register_blueprint(pokemon_bp, url_prefix='/api')
+# Registramos el blueprint maestro 'api' que viene de routes.py
+app.register_blueprint(api, url_prefix='/api')
 
 
 @app.errorhandler(APIException)
