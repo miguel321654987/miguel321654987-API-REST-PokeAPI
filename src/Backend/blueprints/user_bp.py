@@ -1,9 +1,10 @@
 import os
 from flask import Blueprint, request, jsonify
-from models import db, User
+from Backend.models import db, User
 from sqlalchemy import select
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
-from utils import APIException
+from Backend.utils import APIException
+from Backend.extensions import bcrypt
 
 # 1. Definimos el Blueprint (El componente modular)
 user_bp = Blueprint('User', __name__)
@@ -35,9 +36,12 @@ def handle_signup():
             "El correo electrónico ya está registrado", status_code=409)
 
     try:
-        # 2. Crear y guardar el nuevo usuario
+        # 2. Crear y guardar el nuevo usuario usando Bcrypt
+        # NOTA: decode('utf-8') transforma los bytes generados por bcrypt en un string almacenable en la BD
+        hashed_password = bcrypt.generate_password_hash(
+            password.strip()).decode('utf-8')
         new_user = User(email=email.strip(),
-                        password=password.strip(), is_active=True)
+                        password=hashed_password, is_active=True)
         db.session.add(new_user)
         db.session.commit()
 
@@ -66,14 +70,19 @@ def create_token():
         raise APIException(
             "Los campos 'email' y 'password' son requeridos", status_code=400)
 
-    # Consulta la base de datos con SQLAlchemy 2.0 style
-    stmt = select(User).where(User.email == email.strip(),
-                              User.password == password.strip())
+    # 1. Buscamos al usuario únicamente por su email
+    stmt = select(User).where(User.email == email.strip())
     user = db.session.execute(stmt).scalar_one_or_none()
 
-    if user is None:
+    # 2. Verificamos si existe y si la contraseña coincide usando bcrypt.check_password_hash
+    if user is None or not bcrypt.check_password_hash(user.password, password.strip()):
         raise APIException(
             "Credenciales inválidas. Email o contraseña incorrectos", status_code=401)
+
+    # 3. Denegar login si la cuenta está desactivada
+    if not user.is_active:
+        raise APIException(
+            "Acceso denegado: Tu cuenta ha sido desactivada.", status_code=403)
 
     # Crea un nuevo token con el id de usuario dentro
     access_token = create_access_token(identity=str(user.id))
@@ -131,7 +140,7 @@ def get_all_users():
 
 @user_bp.route('/user/<int:user_id>', methods=['GET'])
 def get_user_by_id(user_id):
-    # ACTUALIZACIÓN: db.session.get() para buscar por clave primaria
+    # db.session.get() para buscar por clave primaria
     user = db.session.get(User, user_id)
 
     if user is None:
@@ -146,7 +155,7 @@ def get_user_by_id(user_id):
 
 @user_bp.route('/user/<int:user_id>', methods=['DELETE'])
 def delete_user(user_id):
-    # ACTUALIZACIÓN: db.session.get() en lugar de User.query.get()
+    # db.session.get() en lugar de User.query.get()
     user = db.session.get(User, user_id)
 
     if user is None:
@@ -175,7 +184,7 @@ def update_user(user_id):
         raise APIException(
             "Debes incluir el cuerpo (body) en formato JSON", status_code=400)
 
-    # ACTUALIZACIÓN: db.session.get() en lugar de User.query.get()
+    # db.session.get() en lugar de User.query.get()
     user = db.session.get(User, user_id)
     if user is None:
         raise APIException(
@@ -189,11 +198,17 @@ def update_user(user_id):
         raise APIException(
             "El campo 'email' es inválido o está vacío", status_code=400)
 
+    if password is not None and (not isinstance(password, str) or password.strip() == ""):
+        raise APIException(
+            "El campo 'password' no puede estar vacío si se incluye en la petición", status_code=400)
+
     try:
         if email is not None:
             user.email = email.strip()
         if password is not None:
-            user.password = password.strip()
+            # CAMBIO: Hasheamos la nueva contraseña usando Bcrypt
+            user.password = bcrypt.generate_password_hash(
+                password.strip()).decode('utf-8')
 
         db.session.commit()
 

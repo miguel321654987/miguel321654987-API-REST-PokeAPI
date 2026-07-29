@@ -1,8 +1,8 @@
 import os
 from flask import Blueprint, request, jsonify
-from models import db, Pokemon
+from Backend.models import db, Pokemon
 from sqlalchemy import select
-from utils import APIException
+from Backend.utils import APIException
 
 # 1. Definimos el Blueprint (El componente modular)
 pokemon_bp = Blueprint('Pokemon', __name__)
