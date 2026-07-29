@@ -1,4 +1,3 @@
-import os
 from flask import Blueprint, request, jsonify
 from Backend.models import db, User
 from sqlalchemy import select
