@@ -5,14 +5,13 @@ import os
 from flask import Flask, jsonify, request, Blueprint
 from flask_migrate import Migrate
 from flask_cors import CORS
-from utils import APIException, generate_sitemap
-from admin import setup_admin
-from models import db
+from Backend.utils import APIException, generate_sitemap
+from Backend.admin import setup_admin
+from Backend.models import db
 from sqlalchemy import select, insert, delete
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
-from .blueprints.user_bp import user_bp
-from .blueprints.pokemon_bp import pokemon_bp
-
+from Backend.blueprints.user_bp import user_bp
+from Backend.blueprints.pokemon_bp import pokemon_bp
 
 api = Blueprint('api', __name__)
 

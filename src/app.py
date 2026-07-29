@@ -11,12 +11,16 @@ from Backend.models import db
 from sqlalchemy import select, insert, delete
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
 from Backend.routes import api
-
+from Backend.extensions import bcrypt
 
 app = Flask(__name__)
 
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
+
 jwt = JWTManager(app)
+
+# UNIÓN OFICIAL: Aquí le inyectamos el motor Flask a Bcrypt
+bcrypt.init_app(app)
 
 app.url_map.strict_slashes = False
 
