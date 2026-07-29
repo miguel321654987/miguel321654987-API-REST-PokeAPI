@@ -2,18 +2,19 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 import os
-from flask import Flask, jsonify, request, Blueprint
+from flask import Flask, jsonify
 from flask_migrate import Migrate
 from flask_cors import CORS
 from Backend.utils import APIException, generate_sitemap
 from Backend.admin import setup_admin
 from Backend.models import db
-from sqlalchemy import select, insert, delete
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
+from flask_jwt_extended import JWTManager
 from Backend.routes import api
 from Backend.extensions import bcrypt
 
 app = Flask(__name__)
+
+CORS(app)
 
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 
