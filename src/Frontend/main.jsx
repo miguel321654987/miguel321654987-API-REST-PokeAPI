@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css"; // Estilos globales de tu aplicación
 import { RouterProvider } from "react-router-dom"; // Importa el proveedor del enrutador
-import { router } from "./Routes.jsx"; // Importa la configuración de rutas de tu app
+import { router } from "./routes.jsx"; // Importa la configuración de rutas de tu app
 
 // Importaciones esenciales de estilos de Bootstrap
 import "bootstrap/dist/css/bootstrap.min.css";
