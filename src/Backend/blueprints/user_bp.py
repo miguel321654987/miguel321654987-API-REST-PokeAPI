@@ -153,20 +153,45 @@ def get_user_by_id(user_id):
 
 
 @user_bp.route('/user/<int:user_id>', methods=['DELETE'])
+@jwt_required()  # 1. Valida que exista un token JWT
 def delete_user(user_id):
-    # db.session.get() en lugar de User.query.get()
-    user = db.session.get(User, user_id)
+    # 2. Validación IDOR: ¿El token coincide con el ID de la URL?
+    current_user_id = get_jwt_identity()
+    if int(user_id) != int(current_user_id):
+        raise APIException(
+            "No tienes permisos para eliminar esta cuenta.", status_code=403)
 
+    # 3. Forzar el envío del JSON con la contraseña actual
+    # silent=True evita que falle si no mandan JSON
+    body = request.get_json(silent=True)
+    if body is None or 'current_password' not in body:
+        raise APIException(
+            "Es obligatorio incluir tu 'current_password' en el cuerpo JSON para eliminar la cuenta.", status_code=400)
+
+    current_password = body.get('current_password')
+
+    if not isinstance(current_password, str) or current_password.strip() == "":
+        raise APIException(
+            "La contraseña proporcionada no es válida.", status_code=400)
+
+    # 4. Buscar el usuario en la base de datos
+    user = db.session.get(User, user_id)
     if user is None:
         raise APIException(
             f"El usuario con ID {user_id} no existe", status_code=404)
 
+    # 5. Verificar que la contraseña coincide con el hash guardado
+    if not bcrypt.check_password_hash(user.password, current_password.strip()):
+        raise APIException(
+            "La contraseña actual proporcionada es incorrecta. Acción cancelada.", status_code=401)
+
+    # --- A partir de aquí el usuario ha confirmado su identidad al 100% ---
     try:
         db.session.delete(user)
         db.session.commit()
 
         return jsonify({
-            "message": f"Usuario con ID {user_id} eliminado con éxito",
+            "message": f"Tu cuenta (ID {user_id}) ha sido eliminada de forma permanente con éxito.",
             "id_deleted": user_id
         }), 200
 
@@ -177,13 +202,20 @@ def delete_user(user_id):
 
 
 @user_bp.route('/user/<int:user_id>', methods=['PUT'])
+@jwt_required()
 def update_user(user_id):
+    # 1. Validación de sesión: ¿El token pertenece al ID de la URL?
+    current_user_id = get_jwt_identity()
+    if int(user_id) != int(current_user_id):
+        raise APIException(
+            "No tienes permisos para modificar esta cuenta.", status_code=403)
+
     body = request.get_json()
     if body is None:
         raise APIException(
             "Debes incluir el cuerpo (body) en formato JSON", status_code=400)
 
-    # db.session.get() en lugar de User.query.get()
+    # 2. Buscar al usuario en la base de datos
     user = db.session.get(User, user_id)
     if user is None:
         raise APIException(
@@ -191,28 +223,39 @@ def update_user(user_id):
 
     email = body.get('email')
     password = body.get('password')
+    # <--- Contraseña actual para validar identidad
+    current_password = body.get('current_password')
 
-    # Validaciones previas a la asignación
+    # 3. Validar que se envíe la contraseña actual para autorizar cambios de perfil
+    if current_password is None or current_password.strip() == "":
+        raise APIException(
+            "Es obligatorio introducir tu contraseña actual para confirmar tu identidad.", status_code=400)
+
+    # 4. Verificar si la contraseña ingresada es correcta contra la base de datos
+    if not bcrypt.check_password_hash(user.password, current_password.strip()):
+        raise APIException(
+            "La contraseña actual proporcionada es incorrecta.", status_code=401)
+
+    # --- A partir de aquí el usuario ha demostrado ser el dueño real ---
+
+    # Validaciones de formato
     if email is not None and (not isinstance(email, str) or email.strip() == ""):
         raise APIException(
             "El campo 'email' es inválido o está vacío", status_code=400)
-
     if password is not None and (not isinstance(password, str) or password.strip() == ""):
         raise APIException(
-            "El campo 'password' no puede estar vacío si se incluye en la petición", status_code=400)
+            "El campo 'password' no puede estar vacío si se incluye", status_code=400)
 
     try:
         if email is not None:
             user.email = email.strip()
         if password is not None:
-            # CAMBIO: Hasheamos la nueva contraseña usando Bcrypt
             user.password = bcrypt.generate_password_hash(
                 password.strip()).decode('utf-8')
 
         db.session.commit()
-
         return jsonify({
-            "message": "Usuario actualizado con éxito",
+            "message": "Perfil actualizado con éxito",
             "results": user.serialize()
         }), 200
 
