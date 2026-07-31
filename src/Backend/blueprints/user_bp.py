@@ -18,6 +18,8 @@ def handle_signup():
 
     email = body.get("email")
     password = body.get("password")
+    name = body.get("name")          # NUEVO
+    last_name = body.get("last_name")  # NUEVO
 
     # Validaciones estrictas de campos requeridos para un nuevo usuario
     if not email or not isinstance(email, str) or email.strip() == "":
@@ -25,6 +27,12 @@ def handle_signup():
     if not password or not isinstance(password, str) or password.strip() == "":
         raise APIException(
             "El campo 'password' es obligatorio", status_code=400)
+    # NUEVAS VALIDACIONES
+    if not name or not isinstance(name, str) or name.strip() == "":
+        raise APIException("El campo 'name' es obligatorio", status_code=400)
+    if not last_name or not isinstance(last_name, str) or last_name.strip() == "":
+        raise APIException(
+            "El campo 'last_name' es obligatorio", status_code=400)
 
     # 1. Verificar si el usuario ya existe (SQLAlchemy 2.0 style)
     stmt = select(User).where(User.email == email.strip())
@@ -36,11 +44,18 @@ def handle_signup():
 
     try:
         # 2. Crear y guardar el nuevo usuario usando Bcrypt
-        # NOTA: decode('utf-8') transforma los bytes generados por bcrypt en un string almacenable en la BD
         hashed_password = bcrypt.generate_password_hash(
             password.strip()).decode('utf-8')
-        new_user = User(email=email.strip(),
-                        password=hashed_password, is_active=True)
+
+        # Se agregan name y last_name limpiando espacios innecesarios
+        new_user = User(
+            email=email.strip(),
+            password=hashed_password,
+            name=name.strip(),
+            last_name=last_name.strip(),
+            is_active=True
+        )
+
         db.session.add(new_user)
         db.session.commit()
 
