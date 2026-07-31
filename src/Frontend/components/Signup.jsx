@@ -2,14 +2,14 @@ import React, { useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { toast } from "react-toastify";
 
-export const Register = ({ id }) => {
+export const Signup = ({ id }) => {
   const { store, dispatch } = useGlobalReducer();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [last_name, setLast_name] = useState("");
 
-  const handleRegister = async () => {
+  const handleSignup = async () => {
     const tieneLetra = /[a-zA-Z]/.test(password);
     const tieneNumero = /[0-9]/.test(password);
 
@@ -50,7 +50,7 @@ export const Register = ({ id }) => {
     }
     try {
       const resp = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/register`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/auth/signup`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -151,7 +151,7 @@ export const Register = ({ id }) => {
             />
           </div>
           <div className="modal-footer">
-            <button className="btn btn-primary w-100" onClick={handleRegister}>
+            <button className="btn btn-primary w-100" onClick={handleSignup}>
               Registrarse
             </button>
           </div>

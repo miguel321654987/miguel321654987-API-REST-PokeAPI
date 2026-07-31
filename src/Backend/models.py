@@ -24,6 +24,11 @@ class User(db.Model):
     email: Mapped[str] = mapped_column(
         String(120), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String(250), nullable=False)
+
+    # NUEVOS CAMPOS: Se agrega nombre y apellido (obligatorios, máximo 80 caracteres)
+    name: Mapped[str] = mapped_column(String(80), nullable=False)
+    last_name: Mapped[str] = mapped_column(String(80), nullable=False)
+
     is_active: Mapped[bool] = mapped_column(
         Boolean(), nullable=False, default=True)
 
@@ -37,6 +42,8 @@ class User(db.Model):
         return {
             "id": self.id,
             "email": self.email,
+            "name": self.name,          # Incluido en la serialización
+            "last_name": self.last_name,  # Incluido en la serialización
             "favorite_pokemon_ids": [p.id for p in self.pokemon_favorites],
         }
 

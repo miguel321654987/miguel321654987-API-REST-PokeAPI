@@ -37,36 +37,34 @@ export function StoreProvider({ children }) {
 
   useEffect(() => {
     const fetchData = async () => {
-      // CORRECCIÓN FLUJO: Los datos externos de CoinGecko deben cargarse SIEMPRE,
-      // estemos logueados o no. Los datos privados de usuario solo si hay token.
+      // CORRECCIÓN FLUJO: Los datos públicos de la PokeAPI se cargan SIEMPRE.
+      // Los datos privados del usuario (perfil y favoritos) solo si hay token.
 
-      // --- 1. Obtener Datos Externos (CoinGecko - Público) ---
-      const options = {
-        method: "GET",
-        headers: { "x-cg-demo-api-key": import.meta.env.VITE_API_KEY },
-      };
-
+      // --- 1. Obtener Datos Públicos (PokeAPI) ---
       try {
-        dispatch({ type: "API_LOADING", payload: "Loading External Data..." });
+        dispatch({ type: "API_LOADING", payload: "Loading Pokémon Data..." });
+
+        // Petición a la PokeAPI. Usamos limit=151 para traer la primera generación.
         const response = await fetch(
-          "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd",
-          options,
+          "https://pokeapi.co/api/v2/pokemon?limit=151",
         );
-        if (!response.ok)
-          throw new Error("Error en la API externa de CoinGecko");
+
+        if (!response.ok) throw new Error("Error al consultar la PokeAPI");
 
         const result = await response.json();
-        dispatch({ type: "API_SUCCESS", payload: result });
+
+        // Enviamos 'result.results' que contiene el array [{name, url}, ...]
+        dispatch({ type: "API_SUCCESS", payload: result.results });
       } catch (err) {
-        console.error("Error en la carga externa:", err);
+        console.error("Error en la carga de Pokémon:", err);
         dispatch({
           type: "API_ERROR",
-          payload: `CoinGecko error: ${err.message}`,
+          payload: `PokeAPI error: ${err.message}`,
         });
       }
 
       // --- FILTRO DE SEGURIDAD INTERNO ---
-      // Si no hay token, nos detenemos aquí de forma segura. CoinGecko ya se cargó.
+      // Si no hay token, nos detenemos aquí de forma segura. La PokeAPI ya se cargó.
       if (!store.token) return;
 
       // --- 2. Obtener Perfil de Usuario (Verificación de Token/Sesión) ---
@@ -77,7 +75,7 @@ export function StoreProvider({ children }) {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${store.token}`, // Usamos store.token directamente
+              Authorization: `Bearer ${store.token}`,
             },
           },
         );
@@ -111,7 +109,7 @@ export function StoreProvider({ children }) {
         const favoriteData = await favResponse.json();
         dispatch({
           type: "FAVORITES_SUCCESS",
-          payload: favoriteData.results || favoriteData, // Previene fallos si tu API encapsula en .results
+          payload: favoriteData.results || favoriteData,
         });
       } catch (error) {
         console.error("Error al obtener favoritos:", error);
@@ -120,16 +118,16 @@ export function StoreProvider({ children }) {
     };
 
     fetchData();
-    // CORRECCIÓN CRUCIAL: Añadimos store.token para que se reactive al iniciar/cerrar sesión
   }, [dispatch, store.token]);
 
-  // OPTIMIZACIÓN: Evita que un error en CoinGecko rompa toda la visualización de la App
-  if (store.api.loading && !store.api.data)
-    return <p>Cargando datos del mercado...</p>;
-
+  // ELIMINACIÓN DE BLOQUEO: Mantiene el context vivo pase lo que pase en el árbol de renderizado.
   return (
     <StoreContext.Provider value={{ store, dispatch }}>
-      {children}
+      {store.api.loading && !store.api.data ? (
+        <p>Cargando lista de Pokémon...</p>
+      ) : (
+        children
+      )}
     </StoreContext.Provider>
   );
 }
