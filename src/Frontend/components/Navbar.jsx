@@ -1,12 +1,11 @@
-import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { Login } from "./Login";
 import { Signup } from "./Signup";
 import { toast } from "react-toastify";
 
 export const Navbar = () => {
-  const { store, dispatch } = useGlobalReducer();
+  const { dispatch } = useGlobalReducer();
 
   return (
     <div>
