@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { toast } from "react-toastify";
 
 export const Login = ({ id }) => {
-  const { store, dispatch } = useGlobalReducer();
+  const { dispatch } = useGlobalReducer();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -30,30 +30,28 @@ export const Login = ({ id }) => {
 
     try {
       const resp = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/login`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/auth/login`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
         },
       );
-      if (resp.status === 401) {
-        dispatch({
-          type: "SET_MESSAGE",
-          payload: { msg: "Email o contraseña incorrectos", status: 401 },
-        });
-        toast.error("Email o contraseña incorrectos");
-        return;
-      }
+
+      // 🔴 REEMPLAZAMOS LOS DOS 'IF' DE ERROR ANTERIORES POR ESTE ÚNICO BLOQUE DINÁMICO
       if (!resp.ok) {
+        const datosError = await resp.json(); // Leemos el JSON que genera tu APIException
+        const mensajeDelBack = datosError.message || "Error al iniciar sesión";
+
         dispatch({
           type: "SET_MESSAGE",
-          payload: { msg: "Error de servidor", status: resp.status },
+          payload: { msg: `⚠️ ${mensajeDelBack}`, status: resp.status },
         });
-        toast.error("Error de servidor");
+        toast.error(mensajeDelBack); // Muestra dinámicamente "Credenciales inválidas...", "Cuenta desactivada...", etc.
         return;
       }
 
+      // 🟢 SI TODO SALIÓ BIEN (Estado 200)
       const data = await resp.json();
       localStorage.setItem("jwt-token", data.token);
       dispatch({ type: "LOGIN", payload: data.token });
@@ -70,7 +68,7 @@ export const Login = ({ id }) => {
         setEmail("");
         setPassword("");
       }, 1000);
-    } catch (error) {
+    } catch {
       dispatch({
         type: "SET_MESSAGE",
         payload: { msg: "Error de conexión", status: 500 },

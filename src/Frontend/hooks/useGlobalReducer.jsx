@@ -36,24 +36,16 @@ export function StoreProvider({ children }) {
   };
 
   useEffect(() => {
+    // 🛑 FETCH COMENTADO TEMPORALMENTE PARA PROBAR SIGNUP Y LOGIN
+    /*
     const fetchData = async () => {
-      // CORRECCIÓN FLUJO: Los datos públicos de la PokeAPI se cargan SIEMPRE.
-      // Los datos privados del usuario (perfil y favoritos) solo si hay token.
-
-      // --- 1. Obtener Datos Públicos (PokeAPI) ---
       try {
         dispatch({ type: "API_LOADING", payload: "Loading Pokémon Data..." });
-
-        // Petición a la PokeAPI. Usamos limit=151 para traer la primera generación.
         const response = await fetch(
           "https://pokeapi.co/api/v2/pokemon?limit=151",
         );
-
         if (!response.ok) throw new Error("Error al consultar la PokeAPI");
-
         const result = await response.json();
-
-        // Enviamos 'result.results' que contiene el array [{name, url}, ...]
         dispatch({ type: "API_SUCCESS", payload: result.results });
       } catch (err) {
         console.error("Error en la carga de Pokémon:", err);
@@ -63,11 +55,8 @@ export function StoreProvider({ children }) {
         });
       }
 
-      // --- FILTRO DE SEGURIDAD INTERNO ---
-      // Si no hay token, nos detenemos aquí de forma segura. La PokeAPI ya se cargó.
       if (!store.token) return;
 
-      // --- 2. Obtener Perfil de Usuario (Verificación de Token/Sesión) ---
       try {
         const userresponse = await fetch(
           `${import.meta.env.VITE_BACKEND_URL}/api/user/profile`,
@@ -88,7 +77,6 @@ export function StoreProvider({ children }) {
         console.error("Error al obtener perfil del usuario:", error);
       }
 
-      // --- 3. Obtener Favoritos de Pokémon (Privado) ---
       try {
         const favResponse = await fetch(
           `${import.meta.env.VITE_BACKEND_URL}/api/user/favorites`,
@@ -100,12 +88,10 @@ export function StoreProvider({ children }) {
             },
           },
         );
-
         if (!favResponse.ok)
           throw new Error(
             `Falló al cargar favoritos: ${favResponse.statusText}`,
           );
-
         const favoriteData = await favResponse.json();
         dispatch({
           type: "FAVORITES_SUCCESS",
@@ -118,16 +104,13 @@ export function StoreProvider({ children }) {
     };
 
     fetchData();
+    */
   }, [dispatch, store.token]);
 
-  // ELIMINACIÓN DE BLOQUEO: Mantiene el context vivo pase lo que pase en el árbol de renderizado.
+  // Se eliminó el bloqueo de "Cargando..." para que renderice directo tus formularios
   return (
     <StoreContext.Provider value={{ store, dispatch }}>
-      {store.api.loading && !store.api.data ? (
-        <p>Cargando lista de Pokémon...</p>
-      ) : (
-        children
-      )}
+      {children}
     </StoreContext.Provider>
   );
 }

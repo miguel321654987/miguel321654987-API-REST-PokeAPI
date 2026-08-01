@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { toast } from "react-toastify";
 
 export const Signup = ({ id }) => {
-  const { store, dispatch } = useGlobalReducer();
+  const { dispatch } = useGlobalReducer();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -67,6 +67,20 @@ export const Signup = ({ id }) => {
         return;
       }
 
+      // 🔴 ¡ESTA ES LA PARTE QUE FALTA PARA LOS ERRORES 400 DEL BACKEND!
+      // Si la respuesta NO es ok (por ejemplo, el error 400 que envió Python)
+      if (!resp.ok) {
+        const datosError = await resp.json(); // React lee el JSON del backend
+        const mensajeDelBack = datosError.message || "Error en el registro";
+
+        dispatch({
+          type: "SET_MESSAGE",
+          payload: { msg: `⚠️ ${mensajeDelBack}`, status: resp.status },
+        });
+        toast.error(mensajeDelBack); // 🌟 ¡Aquí se muestra en la interfaz del usuario!
+        return; // Detiene la función para que no intente hacer el proceso de éxito
+      }
+
       if (resp.ok) {
         dispatch({
           type: "SET_MESSAGE",
@@ -84,7 +98,7 @@ export const Signup = ({ id }) => {
           dispatch({ type: "SET_MESSAGE", payload: null });
         }, 1000);
       }
-    } catch (error) {
+    } catch {
       dispatch({
         type: "SET_MESSAGE",
         payload: { msg: "🚀 Error de conexión.", status: 500 },
