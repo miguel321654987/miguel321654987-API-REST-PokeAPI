@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react"; // Importamos useRef
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { toast } from "react-toastify";
 
@@ -9,7 +9,14 @@ export const Signup = ({ id }) => {
   const [name, setName] = useState("");
   const [last_name, setLast_name] = useState("");
 
-  const handleSignup = async () => {
+  // Referencia limpia de React para controlar el botón de cierre
+  const closeBtnRef = useRef(null);
+
+  // Recibimos el evento 'e' del formulario
+  const handleSignup = async (e) => {
+    // 1. Evitamos que el navegador recargue la página completa
+    e.preventDefault();
+
     const tieneLetra = /[a-zA-Z]/.test(password);
     const tieneNumero = /[0-9]/.test(password);
 
@@ -67,18 +74,16 @@ export const Signup = ({ id }) => {
         return;
       }
 
-      // 🔴 ¡ESTA ES LA PARTE QUE FALTA PARA LOS ERRORES 400 DEL BACKEND!
-      // Si la respuesta NO es ok (por ejemplo, el error 400 que envió Python)
       if (!resp.ok) {
-        const datosError = await resp.json(); // React lee el JSON del backend
+        const datosError = await resp.json();
         const mensajeDelBack = datosError.message || "Error en el registro";
 
         dispatch({
           type: "SET_MESSAGE",
           payload: { msg: `⚠️ ${mensajeDelBack}`, status: resp.status },
         });
-        toast.error(mensajeDelBack); // 🌟 ¡Aquí se muestra en la interfaz del usuario!
-        return; // Detiene la función para que no intente hacer el proceso de éxito
+        toast.error(mensajeDelBack);
+        return;
       }
 
       if (resp.ok) {
@@ -93,8 +98,8 @@ export const Signup = ({ id }) => {
         setPassword("");
 
         setTimeout(() => {
-          const closeBtn = document.getElementById("finalizar-registro");
-          if (closeBtn) closeBtn.click();
+          // Uso seguro de la referencia para cerrar el modal
+          if (closeBtnRef.current) closeBtnRef.current.click();
           dispatch({ type: "SET_MESSAGE", payload: null });
         }, 1000);
       }
@@ -116,12 +121,13 @@ export const Signup = ({ id }) => {
       tabIndex="-1"
     >
       <div className="modal-dialog modal-dialog-centered">
-        <div className="modal-content">
+        {/* 2. Transformamos el contenedor en <form> y añadimos el onSubmit */}
+        <form className="modal-content" onSubmit={handleSignup}>
           <div className="modal-header">
             <h2 className="modal-title fs-5">Registro</h2>
             <button
               type="button"
-              id="finalizar-registro"
+              ref={closeBtnRef} // Asignamos la referencia aquí
               className="btn-close"
               data-bs-dismiss="modal"
               aria-label="Close"
@@ -139,6 +145,7 @@ export const Signup = ({ id }) => {
               className="form-control mb-2"
               type="text"
               placeholder="Nombre"
+              autoComplete="given-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
@@ -146,6 +153,7 @@ export const Signup = ({ id }) => {
               className="form-control mb-2"
               type="text"
               placeholder="Apellido"
+              autoComplete="family-name"
               value={last_name}
               onChange={(e) => setLast_name(e.target.value)}
             />
@@ -153,6 +161,7 @@ export const Signup = ({ id }) => {
               className="form-control mb-2"
               type="email"
               placeholder="Email"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -160,16 +169,18 @@ export const Signup = ({ id }) => {
               className="form-control mb-2"
               type="password"
               placeholder="Contraseña"
+              autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
           <div className="modal-footer">
-            <button className="btn btn-primary w-100" onClick={handleSignup}>
+            {/* 3. Cambiamos a type="submit" y eliminamos el onClick directo de este botón */}
+            <button type="submit" className="btn btn-primary w-100">
               Registrarse
             </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );
