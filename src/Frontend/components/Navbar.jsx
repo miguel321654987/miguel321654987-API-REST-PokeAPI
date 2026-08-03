@@ -36,7 +36,7 @@ export const Navbar = () => {
       <div className="container-fluid">
         {/* Logo o Nombre de la app */}
         <Link to="/" className="navbar-brand font-weight-bold">
-          🚀 Mi Aplicación
+          🚀 PokemonWorld
         </Link>
 
         <div className="d-flex align-items-center">
