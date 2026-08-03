@@ -42,7 +42,7 @@ export function StoreProvider({ children }) {
     // 3. Limpiar el mensaje tras unos segundos adicionales
     setTimeout(() => {
       dispatch({ type: "SET_MESSAGE", payload: null });
-    }, 4500);
+    }, 3000);
   };
 
   useEffect(() => {
