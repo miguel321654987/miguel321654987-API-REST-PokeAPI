@@ -31,22 +31,6 @@ export const Navbar = () => {
     }
   };
 
-  const abrirSignupModal = () => {
-    const modalElement = document.getElementById("signupModal");
-
-    if (modalElement) {
-      if (window.bootstrap && window.bootstrap.Modal) {
-        const modalInstance =
-          window.bootstrap.Modal.getOrCreateInstance(modalElement);
-        modalInstance.show();
-      } else {
-        console.error(
-          "Bootstrap JS no está disponible en 'window.bootstrap'. Revisa tu index.html.",
-        );
-      }
-    }
-  };
-
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-4">
       <div className="container-fluid">
@@ -64,12 +48,6 @@ export const Navbar = () => {
                 onClick={abrirLoginModal}
               >
                 Iniciar Sesión
-              </button>
-              <button
-                className="btn btn-outline-secondary btn-sm"
-                onClick={abrirSignupModal}
-              >
-                Registrarse
               </button>
             </div>
           ) : (
