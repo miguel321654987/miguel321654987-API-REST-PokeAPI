@@ -7,6 +7,23 @@ export const Login = ({ id }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const abrirSignupModal = () => {
+    const loginModal = document.getElementById(id);
+    const signupModal = document.getElementById("signupModal");
+
+    if (loginModal && window.bootstrap?.Modal) {
+      const loginInstance =
+        window.bootstrap.Modal.getOrCreateInstance(loginModal);
+      loginInstance.hide();
+    }
+
+    if (signupModal && window.bootstrap?.Modal) {
+      const signupInstance =
+        window.bootstrap.Modal.getOrCreateInstance(signupModal);
+      signupInstance.show();
+    }
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     dispatch({ type: "SET_MESSAGE", payload: null });
@@ -125,9 +142,16 @@ export const Login = ({ id }) => {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          <div className="modal-footer">
+          <div className="modal-footer d-flex flex-column gap-2">
             <button type="submit" className="btn btn-success w-100">
               Entrar
+            </button>
+            <button
+              type="button"
+              className="btn btn-outline-secondary btn-sm w-100"
+              onClick={abrirSignupModal}
+            >
+              Crear cuenta
             </button>
           </div>
         </form>
