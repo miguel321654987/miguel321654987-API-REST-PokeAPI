@@ -1,7 +1,6 @@
 // Import necessary hooks and functions from React.
 import { useContext, useReducer, createContext, useEffect } from "react";
 import storeReducer, { initialStore } from "../store";
-import { toast } from "react-toastify";
 
 const StoreContext = createContext();
 
@@ -9,16 +8,27 @@ export function StoreProvider({ children }) {
   const [store, dispatch] = useReducer(storeReducer, initialStore());
 
   const handleLogout = () => {
-    // 1. Limpieza de datos
+    // 1. Limpieza inmediata de datos locales y globales
     localStorage.removeItem("jwt-token");
     dispatch({ type: "LOGOUT" });
 
-    // 2. Abrir el modal de Login
+    // 2. Abrir el modal de Login de forma segura mediante la API de Bootstrap
     setTimeout(() => {
-      const loginButton = document.querySelector(
-        '[data-bs-target="#loginModal"]',
-      );
-      if (loginButton) loginButton.click();
+      const modalElement = document.getElementById("loginModal");
+
+      if (modalElement) {
+        // Accedemos de forma directa al objeto global que Bootstrap expone en el navegador
+        if (window.bootstrap && window.bootstrap.Modal) {
+          // Buscamos si ya existe una instancia activa o creamos una limpia de forma segura
+          const modalInstance =
+            window.bootstrap.Modal.getOrCreateInstance(modalElement);
+          modalInstance.show(); // 🚀 Abre el modal inicializando el 'backdrop' correctamente sin romper el código
+        } else {
+          console.error(
+            "Bootstrap JS no está disponible globalmente en la ventana (window.bootstrap).",
+          );
+        }
+      }
 
       dispatch({
         type: "SET_MESSAGE",
@@ -27,12 +37,12 @@ export function StoreProvider({ children }) {
           status: 401,
         },
       });
-    }, 1000);
+    }, 500); // 500ms es suficiente tiempo de espera para que se limpie la interfaz
 
-    // 3. Limpiar el mensaje tras unos segundos
+    // 3. Limpiar el mensaje tras unos segundos adicionales
     setTimeout(() => {
       dispatch({ type: "SET_MESSAGE", payload: null });
-    }, 1000);
+    }, 4500);
   };
 
   useEffect(() => {
@@ -108,8 +118,10 @@ export function StoreProvider({ children }) {
   }, [dispatch, store.token]);
 
   // Se eliminó el bloqueo de "Cargando..." para que renderice directo tus formularios
+
+  // 🔥 CLAVE: Pasamos handleLogout en el objeto del Provider
   return (
-    <StoreContext.Provider value={{ store, dispatch }}>
+    <StoreContext.Provider value={{ store, dispatch, handleLogout }}>
       {children}
     </StoreContext.Provider>
   );

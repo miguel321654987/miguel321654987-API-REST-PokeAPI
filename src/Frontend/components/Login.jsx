@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react"; // 💡 Ya no necesitas 'useRef'
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { toast } from "react-toastify";
 
@@ -7,13 +7,25 @@ export const Login = ({ id }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Referencia para acceder al botón de cierre de manera limpia en React
-  const closeBtnRef = useRef(null);
+  const abrirSignupModal = () => {
+    const loginModal = document.getElementById(id);
+    const signupModal = document.getElementById("signupModal");
+
+    if (loginModal && window.bootstrap?.Modal) {
+      const loginInstance =
+        window.bootstrap.Modal.getOrCreateInstance(loginModal);
+      loginInstance.hide();
+    }
+
+    if (signupModal && window.bootstrap?.Modal) {
+      const signupInstance =
+        window.bootstrap.Modal.getOrCreateInstance(signupModal);
+      signupInstance.show();
+    }
+  };
 
   const handleLogin = async (e) => {
-    // Evita que la página se recargue al procesar el formulario
     e.preventDefault();
-
     dispatch({ type: "SET_MESSAGE", payload: null });
 
     if (!email.trim() || !password.trim()) {
@@ -47,7 +59,6 @@ export const Login = ({ id }) => {
       if (!resp.ok) {
         const datosError = await resp.json();
         const mensajeDelBack = datosError.message || "Error al iniciar sesión";
-
         dispatch({
           type: "SET_MESSAGE",
           payload: { msg: `⚠️ ${mensajeDelBack}`, status: resp.status },
@@ -65,9 +76,17 @@ export const Login = ({ id }) => {
       });
       toast.success("¡Sesión iniciada!");
 
+      // 🌟 SOLUCIÓN AQUÍ: Cierre seguro usando la API oficial de Bootstrap
       setTimeout(() => {
-        // Cierre del modal seguro usando la referencia de React
-        if (closeBtnRef.current) closeBtnRef.current.click();
+        const modalElement = document.getElementById(id); // Buscamos el contenedor del modal por su id
+
+        if (modalElement && window.bootstrap && window.bootstrap.Modal) {
+          // Obtenemos la instancia que Bootstrap ya creó o creamos una limpia
+          const modalInstance =
+            window.bootstrap.Modal.getOrCreateInstance(modalElement);
+          modalInstance.hide(); // 🚀 Cierra el modal y elimina el fondo (backdrop) de forma segura
+        }
+
         dispatch({ type: "SET_MESSAGE", payload: null });
         setEmail("");
         setPassword("");
@@ -90,15 +109,13 @@ export const Login = ({ id }) => {
       tabIndex="-1"
     >
       <div className="modal-dialog modal-dialog-centered">
-        {/* Envolvemos el contenido en un tag <form> */}
         <form className="modal-content" onSubmit={handleLogin}>
           <div className="modal-header">
             <h2 className="modal-title fs-5">Login</h2>
             <button
               type="button"
-              ref={closeBtnRef} // Asignamos la referencia aquí
               className="btn-close"
-              data-bs-dismiss="modal"
+              data-bs-dismiss="modal" // Conservamos esto para cuando el usuario hace clic manual
               aria-label="Close"
               onClick={() => {
                 dispatch({ type: "SET_MESSAGE", payload: null });
@@ -112,7 +129,7 @@ export const Login = ({ id }) => {
               className="form-control mb-2"
               type="email"
               placeholder="Email"
-              autoComplete="username" // Ayuda a los gestores de contraseñas
+              autoComplete="username"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -120,15 +137,21 @@ export const Login = ({ id }) => {
               className="form-control mb-2"
               type="password"
               placeholder="Contraseña"
-              autoComplete="current-password" // Ayuda a los gestores de contraseñas
+              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          <div className="modal-footer">
-            {/* El botón ahora es tipo 'submit' para activar el formulario */}
+          <div className="modal-footer d-flex flex-column gap-2">
             <button type="submit" className="btn btn-success w-100">
               Entrar
+            </button>
+            <button
+              type="button"
+              className="btn btn-outline-secondary btn-sm w-100"
+              onClick={abrirSignupModal}
+            >
+              Crear cuenta
             </button>
           </div>
         </form>
