@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+import requests
 from Backend.models import db, Pokemon
 from sqlalchemy import select
 from Backend.utils import APIException
@@ -11,6 +12,28 @@ pokemon_bp = Blueprint('Pokemon', __name__)
 def get_all_pokemon():
     stmt = select(Pokemon)
     pokemon_query = db.session.scalars(stmt).all()
+
+    # 🚀 Si tu base de datos está vacía, la poblamos de forma automática desde la PokeAPI
+    if not pokemon_query:
+        try:
+            # Limitamos a 100 para no saturar la base de datos
+            response = requests.get(
+                "https://pokeapi.co/api/v2/pokemon?limit=10")
+            if response.status_code == 200:
+                api_data = response.json()
+
+                for poke in api_data.get("results", []):
+                    # 💡 USAMOS 'pokemon_name' para cumplir con tu modelo de base de datos
+                    nuevo_pokemon = Pokemon(
+                        pokemon_name=poke["name"]
+                    )
+                    db.session.add(nuevo_pokemon)
+
+                db.session.commit()
+                # Volvemos a consultar para obtener la lista con los IDs generados por SQLite
+                pokemon_query = db.session.scalars(stmt).all()
+        except Exception as e:
+            print(f"Error al poblar la base de datos: {e}")
 
     if not pokemon_query:
         return jsonify({
