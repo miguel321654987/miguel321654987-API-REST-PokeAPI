@@ -18,7 +18,7 @@ def get_all_pokemon():
         try:
             # Limitamos a 100 para no saturar la base de datos
             response = requests.get(
-                "https://pokeapi.co/api/v2/pokemon?limit=10")
+                "https://pokeapi.co/api/v2/pokemon?limit=12")
             if response.status_code == 200:
                 api_data = response.json()
 
