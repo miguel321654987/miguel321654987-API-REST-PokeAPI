@@ -21,6 +21,7 @@ sqlalchemy = "*"
 flask = "*"
 flask-migrate = "*"
 flask-jwt-extended = "*"
+requests = "*"
 
 [requires]
 python_version = "3.13"
