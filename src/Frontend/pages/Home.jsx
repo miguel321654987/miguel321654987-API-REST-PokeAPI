@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 export const Home = () => {
   const [pokemons, setPokemons] = useState([]);
@@ -7,19 +7,22 @@ export const Home = () => {
   useEffect(() => {
     const obtenerPokemons = async () => {
       try {
+        // 1. fetch devuelve el objeto Response de la PokeAPI oficial
+        // Agregamos ?limit=20 para traer los primeros 20 pokemons (puedes cambiar el número)
         const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/api/pok/pokemon`,
+          "https://pokeapi.co/api/v2/pokemon?limit=12",
         );
+
+        // 2. .json() lo convierte a un objeto nativo de JavaScript
         const data = await response.json();
 
+        // 3. La PokeAPI siempre estructura su respuesta como un objeto con la propiedad .results
         if (data && data.results) {
           setPokemons(data.results);
-        } else if (Array.isArray(data)) {
-          setPokemons(data);
         }
       } catch (error) {
         console.error(
-          "Error crítico al conectar con el servidor local:",
+          "Error crítico al conectar con la PokeAPI externa:",
           error,
         );
       } finally {

@@ -8,46 +8,46 @@ from Backend.utils import APIException
 pokemon_bp = Blueprint('Pokemon', __name__)
 
 
-@pokemon_bp.route('/pokemon', methods=['GET'])
-def get_all_pokemon():
-    stmt = select(Pokemon)
-    pokemon_query = db.session.scalars(stmt).all()
+# @pokemon_bp.route('/pokemon', methods=['GET'])
+# def get_all_pokemon():
+#     stmt = select(Pokemon)
+#     pokemon_query = db.session.scalars(stmt).all()
 
-    # 🚀 Si tu base de datos está vacía, la poblamos de forma automática desde la PokeAPI
-    if not pokemon_query:
-        try:
-            # Limitamos a 100 para no saturar la base de datos
-            response = requests.get(
-                "https://pokeapi.co/api/v2/pokemon?limit=12")
-            if response.status_code == 200:
-                api_data = response.json()
+#     # 🚀 Si tu base de datos está vacía, la poblamos de forma automática desde la PokeAPI
+#     if not pokemon_query:
+#         try:
+#             # Limitamos a 100 para no saturar la base de datos
+#             response = requests.get(
+#                 "https://pokeapi.co/api/v2/pokemon?limit=12")
+#             if response.status_code == 200:
+#                 api_data = response.json()
 
-                for poke in api_data.get("results", []):
-                    # 💡 USAMOS 'pokemon_name' para cumplir con tu modelo de base de datos
-                    nuevo_pokemon = Pokemon(
-                        pokemon_name=poke["name"]
-                    )
-                    db.session.add(nuevo_pokemon)
+#                 for poke in api_data.get("results", []):
+#                     # 💡 USAMOS 'pokemon_name' para cumplir con tu modelo de base de datos
+#                     nuevo_pokemon = Pokemon(
+#                         pokemon_name=poke["name"]
+#                     )
+#                     db.session.add(nuevo_pokemon)
 
-                db.session.commit()
-                # Volvemos a consultar para obtener la lista con los IDs generados por SQLite
-                pokemon_query = db.session.scalars(stmt).all()
-        except Exception as e:
-            print(f"Error al poblar la base de datos: {e}")
+#                 db.session.commit()
+#                 # Volvemos a consultar para obtener la lista con los IDs generados por SQLite
+#                 pokemon_query = db.session.scalars(stmt).all()
+#         except Exception as e:
+#             print(f"Error al poblar la base de datos: {e}")
 
-    if not pokemon_query:
-        return jsonify({
-            "message": "No se encontraron Pokémon en la base de datos",
-            "results": []
-        }), 200
+#     if not pokemon_query:
+#         return jsonify({
+#             "message": "No se encontraron Pokémon en la base de datos",
+#             "results": []
+#         }), 200
 
-    all_pokemon = [pokemon.serialize() for pokemon in pokemon_query]
+#     all_pokemon = [pokemon.serialize() for pokemon in pokemon_query]
 
-    return jsonify({
-        "message": "Pokémon obtenidos con éxito",
-        "results": all_pokemon,
-        "total_pokemon": len(all_pokemon)
-    }), 200
+#     return jsonify({
+#         "message": "Pokémon obtenidos con éxito",
+#         "results": all_pokemon,
+#         "total_pokemon": len(all_pokemon)
+#     }), 200
 
 
 @pokemon_bp.route('/pokemon/<int:pokemon_id>', methods=['GET'])
