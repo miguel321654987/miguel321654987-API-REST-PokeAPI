@@ -4,13 +4,28 @@ export const Home = () => {
   const [pokemons, setPokemons] = useState([]);
   const [loading, setLoading] = useState(true);
 
+ import { useState, useEffect } from "react";
+import useGlobalReducer from "./useGlobalReducer"; // Importamos tu hook global
+
+export const Home = () => {
+  const { store, dispatch } = useGlobalReducer(); // 👈 Modificado: Extraemos 'store' además de 'dispatch'
+  const [pokemons, setPokemons] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
+    // 👈 Añadido: Si el store ya tiene los datos, los usamos y evitamos el fetch por completo
+    if (store.api.data && store.api.data.length > 0) {
+      setPokemons(store.api.data);
+      setLoading(false);
+      return; // Corta la ejecución aquí para no hacer las líneas de abajo
+    }
+
     const obtenerPokemons = async () => {
       try {
         // 1. fetch devuelve el objeto Response de la PokeAPI oficial
         // Agregamos ?limit=20 para traer los primeros 20 pokemons (puedes cambiar el número)
         const response = await fetch(
-          "https://pokeapi.co/api/v2/pokemon?limit=12",
+          "https://pokeapi.co",
         );
 
         // 2. .json() lo convierte a un objeto nativo de JavaScript
@@ -19,6 +34,9 @@ export const Home = () => {
         // 3. La PokeAPI siempre estructura su respuesta como un objeto con la propiedad .results
         if (data && data.results) {
           setPokemons(data.results);
+          
+          // Guardamos los datos en tu storeReducer genérico
+          dispatch({ type: "API_SUCCESS", payload: data.results }); 
         }
       } catch (error) {
         console.error(
@@ -31,7 +49,8 @@ export const Home = () => {
     };
 
     obtenerPokemons();
-  }, []);
+  }, [dispatch, store.api.data]); // 👈 Añadido store.api.data como dependencia
+
 
   return (
     <div className="container text-center mt-5 text-light">
