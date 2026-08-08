@@ -1,56 +1,41 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 
 export const Home = () => {
-  const [pokemons, setPokemons] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { store, dispatch } = useGlobalReducer();
 
- import { useState, useEffect } from "react";
-import useGlobalReducer from "./useGlobalReducer"; // Importamos tu hook global
-
-export const Home = () => {
-  const { store, dispatch } = useGlobalReducer(); // 👈 Modificado: Extraemos 'store' además de 'dispatch'
-  const [pokemons, setPokemons] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // 1. Extraemos de forma limpia las variables directamente desde tu store global
+  const { data: pokemons, loading, error } = store.api;
 
   useEffect(() => {
-    // 👈 Añadido: Si el store ya tiene los datos, los usamos y evitamos el fetch por completo
-    if (store.api.data && store.api.data.length > 0) {
-      setPokemons(store.api.data);
-      setLoading(false);
-      return; // Corta la ejecución aquí para no hacer las líneas de abajo
+    // 2. Comprobamos si ya existen datos en el store para evitar el fetch por completo
+    if (pokemons && pokemons.length > 0) {
+      return; // Corta la ejecución aquí; no hace falta pedir nada a internet
     }
 
     const obtenerPokemons = async () => {
       try {
-        // 1. fetch devuelve el objeto Response de la PokeAPI oficial
-        // Agregamos ?limit=20 para traer los primeros 20 pokemons (puedes cambiar el número)
-        const response = await fetch(
-          "https://pokeapi.co",
-        );
+        // 3. Usamos tu acción del reducer para activar el estado de carga global
+        dispatch({ type: "API_LOADING" });
 
-        // 2. .json() lo convierte a un objeto nativo de JavaScript
+        const response = await fetch(
+          "https://api.tcgdex.net/v2/en/cards?limit=10&offset=0",
+        );
         const data = await response.json();
 
-        // 3. La PokeAPI siempre estructura su respuesta como un objeto con la propiedad .results
         if (data && data.results) {
-          setPokemons(data.results);
-          
-          // Guardamos los datos en tu storeReducer genérico
-          dispatch({ type: "API_SUCCESS", payload: data.results }); 
+          // 4. Guardamos los datos en el store (tu reducer apagará el loading automáticamente)
+          dispatch({ type: "API_SUCCESS", payload: data.results });
         }
-      } catch (error) {
-        console.error(
-          "Error crítico al conectar con la PokeAPI externa:",
-          error,
-        );
-      } finally {
-        setLoading(false);
+      } catch (err) {
+        console.error("Error crítico al conectar con la PokeAPI externa:", err);
+        // 5. Usamos tu acción de error si la petición falla
+        dispatch({ type: "API_ERROR", payload: err.message });
       }
     };
 
     obtenerPokemons();
-  }, [dispatch, store.api.data]); // 👈 Añadido store.api.data como dependencia
-
+  }, [dispatch, pokemons]); // Dependencias limpias basadas en el valor del store
 
   return (
     <div className="container text-center mt-5 text-light">
