@@ -23,30 +23,35 @@ export const Home = () => {
         );
         const data = await response.json();
 
-        // 💡 CAMBIO CRÍTICO: La API de TCGdex guarda las cartas paginadas en la propiedad 'v2'
-        if (data && Array.isArray(data.v2)) {
-          // Mapeamos el array 'data.v2' que ya contiene exactamente 20 elementos
-          const datosFormateados = data.v2.map((carta) => ({
+        // 💡 CORRECCIÓN CRÍTICA: La API devuelve directamente un Array, no un objeto con propiedad .v2
+        if (data && Array.isArray(data)) {
+          // Mapeamos el array directamente
+          const datosFormateados = data.map((carta) => ({
             id: carta.id,
-            pokemon_name: carta.name, // Mantenemos consistencia con tu propiedad 'pokemon_name'
-            // Extraemos la URL oficial directa del JSON y le añadimos la extensión de calidad ligera
+            pokemon_name: carta.name,
+            // Extraemos la URL de la imagen y añadimos extensión de calidad si existe
             image: carta.image
               ? `${carta.image}/low.png`
-              : "https://placeholder.com", // Agregado placeholder válido para que no rompa la UI
+              : "https://placehold.co", // Marcador de posición limpio si no hay imagen
           }));
 
-          // Guardamos los datos limpios en tu store global
+          // Guardamos los datos limpios en tu store global y desactivamos el loading
           dispatch({ type: "API_SUCCESS", payload: datosFormateados });
+        } else {
+          // Si por alguna razón la respuesta no es un array, lanzamos error estructurado
+          throw new Error(
+            "La respuesta del servidor no tiene el formato esperado.",
+          );
         }
       } catch (err) {
         console.error("Error crítico al conectar con la API de TCGdex:", err);
-        // 5. Usamos tu acción de error si la petición falla
+        // 5. Desactivamos el loading enviando el mensaje de error al store
         dispatch({ type: "API_ERROR", payload: err.message });
       }
     };
 
     obtenerPokemons();
-  }, [dispatch]); // Dependencias limpias basadas en el valor del store
+  }, [dispatch, pokemons]); // Se añade pokemons para evaluar correctamente la condición de salida inicial
 
   return (
     <div className="container text-center mt-5 text-light">
@@ -74,10 +79,10 @@ export const Home = () => {
                   <div className="card bg-dark text-light border-secondary h-100 shadow-sm">
                     <div
                       className="p-3 bg-secondary bg-opacity-20 d-flex justify-content-center align-items-center"
-                      style={{ minHeight: "220px" }} // Subido un poco el alto ya que las cartas TCG son verticales
+                      style={{ minHeight: "220px" }}
                     >
                       <img
-                        src={pokemon.image} // 💡 Usamos la URL de la imagen nativa del store
+                        src={pokemon.image}
                         alt={pokemon.pokemon_name}
                         className="img-fluid"
                         style={{ maxHeight: "180px", objectFit: "contain" }}
