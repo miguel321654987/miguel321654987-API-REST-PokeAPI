@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
+import { Link } from "react-router-dom"; // Asegúrate de importar Link para la navegación a detalles
 
 export const Home = () => {
   const { store, dispatch } = useGlobalReducer();
@@ -95,9 +96,12 @@ export const Home = () => {
                         </span>
                         {pokemon.pokemon_name}
                       </h5>
-                      <button className="btn btn-outline-warning btn-sm w-100">
+                      <Link
+                        to={`/pokemon/${pokemon.id}`}
+                        className="btn btn-outline-warning btn-sm w-100"
+                      >
                         Ver Detalles
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 </div>
