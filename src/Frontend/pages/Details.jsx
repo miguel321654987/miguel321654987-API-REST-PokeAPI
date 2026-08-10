@@ -16,7 +16,9 @@ export const PokemonDetail = () => {
       try {
         setLoading(true);
         // Pedimos los detalles completos usando el ID único de texto
-        const response = await fetch(`https://tcgdex.net{id}`);
+        const response = await fetch(
+          `https://api.tcgdex.net/v2/en/cards/${id}`,
+        );
 
         if (!response.ok) {
           throw new Error("No se pudo encontrar la información de esta carta.");
