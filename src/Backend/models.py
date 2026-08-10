@@ -9,9 +9,9 @@ db = SQLAlchemy()
 user_pokemon_association = db.Table(
     "user_pokemon_favorite",
     db.metadata,
-    db.Column("user_id", db.Integer, db.ForeignKey(
+    db.Column("user_id", db.Integer(50), db.ForeignKey(
         "users.id"), primary_key=True),
-    db.Column("pokemon_id", db.Integer, db.ForeignKey(
+    db.Column("pokemon_id", db.String(50), db.ForeignKey(
         "pokemons.id"), primary_key=True)
 )
 
@@ -52,7 +52,7 @@ class Pokemon(db.Model):
     """Modelo de Pokémon"""
     __tablename__ = "pokemons"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[str] = mapped_column(String(50), primary_key=True)
     pokemon_name: Mapped[str] = mapped_column(String(50), nullable=False)
 
     # CORRECCIÓN: Se usa list["User"] porque un pokémon puede ser favorito de muchos usuarios
