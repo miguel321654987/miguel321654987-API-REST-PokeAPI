@@ -8,6 +8,7 @@ import {
 import { Layout } from "./pages/Layout";
 import { Home } from "./pages/Home";
 import { PokemonDetail } from "./pages/Details";
+import { Favoritos } from "./pages/Favoritos";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -22,6 +23,7 @@ export const router = createBrowserRouter(
       {/* Nested Routes: Defines sub-routes within the BaseHome component. */}
       <Route path="/" element={<Home />} />
       <Route path="/pokemon/:id" element={<PokemonDetail />} />
+      <Route path="/favoritos" element={<Favoritos />} />
     </Route>,
   ),
 );
