@@ -1,24 +1,21 @@
 import { useEffect } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
-import { Link } from "react-router-dom"; // Asegúrate de importar Link para la navegación a detalles
+import { Link } from "react-router-dom";
 
 export const Home = () => {
   const { store, dispatch } = useGlobalReducer();
 
-  // 1. Extraemos de forma limpia las variables directamente desde tu store global
+  //Extraemos de forma limpia las variables directamente desde tu store global
   const { data: pokemons, loading, error } = store.api;
 
   useEffect(() => {
     const obtenerPokemons = async () => {
-      // 2. Comprobamos si ya existen datos en el store para evitar el fetch por completo
       if (pokemons && pokemons.length > 0) {
         return; // Corta la ejecución aquí; no hace falta pedir nada a internet
       }
       try {
-        // 3. Usamos tu acción del reducer para activar el estado de carga global
-        dispatch({ type: "API_LOADING" });
+        dispatch({ type: "API_LOADING" }); //Usamos acción del reducer para activar el estado de carga global
 
-        // Modificamos la URL para pedirle explícitamente al servidor la página 1 con solo 20 cartas
         const response = await fetch(
           "https://api.tcgdex.net/v2/en/cards?pagination:page=1&pagination:itemsPerPage=20",
         );
@@ -30,8 +27,7 @@ export const Home = () => {
           const datosFormateados = data.map((carta) => ({
             id: carta.id,
             pokemon_name: carta.name,
-            // Extraemos la URL de la imagen y añadimos extensión de calidad si existe
-            image: carta.image
+            image: carta.image // Extraemos la URL de la imagen y añadimos extensión de calidad si existe
               ? `${carta.image}/low.png`
               : "https://placehold.co", // Marcador de posición limpio si no hay imagen
           }));
@@ -39,8 +35,7 @@ export const Home = () => {
           // Guardamos los datos limpios en tu store global y desactivamos el loading
           dispatch({ type: "API_SUCCESS", payload: datosFormateados });
         } else {
-          // Si por alguna razón la respuesta no es un array, lanzamos error estructurado
-          throw new Error(
+          throw new Error( // Si por alguna razón la respuesta no es un array, lanzamos error estructurado
             "La respuesta del servidor no tiene el formato esperado.",
           );
         }
