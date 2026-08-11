@@ -2,11 +2,9 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
 export const PokemonDetail = () => {
-  // 1. Extraemos el id de la URL (ej: /pokemon/basep-1)
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // 2. Estados locales para la consulta específica de esta carta
   const [card, setCard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -15,7 +13,6 @@ export const PokemonDetail = () => {
     const obtenerDetallePokemon = async () => {
       try {
         setLoading(true);
-        // Pedimos los detalles completos usando el ID único de texto
         const response = await fetch(
           `https://api.tcgdex.net/v2/en/cards/${id}`,
         );
