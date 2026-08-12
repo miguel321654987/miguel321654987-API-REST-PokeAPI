@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useGlobalReducer } from "../context/GlobalContext";
+import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 
 export const PokemonDetail = () => {
   const { id } = useParams();
