@@ -1,11 +1,13 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 
 export const Favoritos = () => {
-  // Estados locales para controlar los datos de tu base de datos de Flask
-  const [favoritos, setFavoritos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { store, dispatch } = useGlobalReducer();
+
+  const { data: favorito, loading, error } = store.api;
 
   // Simulamos el ID del usuario logueado (Hardcodeado a 1 para hacer las pruebas iniciales)
   const USER_ID = 1;
@@ -13,7 +15,7 @@ export const Favoritos = () => {
   useEffect(() => {
     const obtenerFavoritos = async () => {
       try {
-        setLoading(true);
+        dispatch({ type: "API_LOADING" });
         // Hacemos la petición a tu servidor Flask (ajusta la URL según tu entorno)
         const response = await fetch(
           `http://localhost:5000/api/users/${USER_ID}/favorites`,
@@ -32,17 +34,15 @@ export const Favoritos = () => {
           image: `https://tcgdex.net{fav.id}/low.png`,
         }));
 
-        setFavoritos(favoritosFormateados);
+        dispatch({ type: "API_SUCCESS", payload: favoritosFormateados });
       } catch (err) {
         console.error("Error al obtener favoritos:", err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
+        dispatch({ type: "API_ERROR", payload: err.message });
       }
     };
 
     obtenerFavoritos();
-  }, []);
+  }, [dispatch]);
 
   return (
     <div className="container text-center mt-5 text-light mb-5">
@@ -60,7 +60,7 @@ export const Favoritos = () => {
         <p className="text-danger mt-4">Hubo un error: {error}</p>
       ) : (
         <div className="row g-4 justify-content-center mt-2">
-          {favoritos.length === 0 ? (
+          {favorito.length === 0 ? (
             <div className="mt-5 p-5 bg-dark rounded border border-secondary">
               <p className="text-muted fs-5 mb-3">
                 Aún no has guardado ninguna carta.
@@ -70,7 +70,7 @@ export const Favoritos = () => {
               </Link>
             </div>
           ) : (
-            favoritos.map((pokemon) => {
+            favorito.map((pokemon) => {
               return (
                 <div key={pokemon.id} className="col-6 col-md-4 col-lg-3">
                   <div className="card bg-dark text-light border-warning h-100 shadow-sm">

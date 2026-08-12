@@ -24,14 +24,10 @@ class User(db.Model):
     email: Mapped[str] = mapped_column(
         String(120), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String(250), nullable=False)
-
-    # NUEVOS CAMPOS: Se agrega nombre y apellido (obligatorios, máximo 80 caracteres)
     name: Mapped[str] = mapped_column(String(80), nullable=False)
     last_name: Mapped[str] = mapped_column(String(80), nullable=False)
-
     is_active: Mapped[bool] = mapped_column(
         Boolean(), nullable=False, default=True)
-
     # CORRECCIÓN: Se usa list["Pokemon"] porque un usuario tiene muchos pokémons
     pokemon_favorites: Mapped[list["Pokemon"]] = relationship(
         secondary=user_pokemon_association, back_populates="users"
@@ -54,7 +50,6 @@ class Pokemon(db.Model):
 
     id: Mapped[str] = mapped_column(String(50), primary_key=True)
     pokemon_name: Mapped[str] = mapped_column(String(50), nullable=False)
-
     # CORRECCIÓN: Se usa list["User"] porque un pokémon puede ser favorito de muchos usuarios
     users: Mapped[list["User"]] = relationship(
         secondary=user_pokemon_association, back_populates="pokemon_favorites"

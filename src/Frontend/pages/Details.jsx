@@ -1,18 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 
 export const PokemonDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { store, dispatch } = useGlobalReducer();
 
-  const [card, setCard] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { data: card, loading, error } = store.api;
 
   useEffect(() => {
     const obtenerDetallePokemon = async () => {
       try {
-        setLoading(true);
+        dispatch({ type: "API_LOADING" });
         const response = await fetch(
           `https://api.tcgdex.net/v2/en/cards/${id}`,
         );
@@ -22,17 +22,15 @@ export const PokemonDetail = () => {
         }
 
         const data = await response.json();
-        setCard(data);
+        dispatch({ type: "API_SUCCESS", payload: data });
       } catch (err) {
         console.error("Error al cargar detalle:", err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
+        dispatch({ type: "API_ERROR", payload: err.message });
       }
     };
 
     if (id) obtenerDetallePokemon();
-  }, [id]);
+  }, [id, dispatch]);
 
   return (
     <div className="container mt-5 text-light mb-5">

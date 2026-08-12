@@ -1,4 +1,3 @@
-import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx"; // Ajusta la ruta si es necesario
 import { toast } from "react-toastify";
@@ -40,6 +39,9 @@ export const Navbar = () => {
         </Link>
 
         <div className="d-flex align-items-center">
+          <Link to="/favoritos" className="btn btn-warning mt-4">
+            Ir a Mis Cartas Favoritas
+          </Link>
           {/* RENDERIZADO CONDICIONAL: Evaluamos si existe un token en la tienda global */}
           {!store.token ? (
             <div className="d-flex align-items-center gap-2">
