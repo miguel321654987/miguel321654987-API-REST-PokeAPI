@@ -38,8 +38,8 @@ class User(db.Model):
         return {
             "id": self.id,
             "email": self.email,
-            "name": self.name,          # Incluido en la serialización
-            "last_name": self.last_name,  # Incluido en la serialización
+            "name": self.name,
+            "last_name": self.last_name,
             "favorite_pokemon_ids": [p.id for p in self.pokemon_favorites],
         }
 
