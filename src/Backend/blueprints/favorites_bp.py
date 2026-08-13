@@ -33,7 +33,7 @@ def get_user_favorite_pokemons(user_id):
 # 2. AÑADIR UN POKÉMON A FAVORITOS DE UN USUARIO (POST)
 
 
-@favorites_bp.route('/user/<int:user_id>/favorites/<int:pokemon_id>', methods=['POST'])
+@favorites_bp.route('/user/<int:user_id>/favorites/<string:pokemon_id>', methods=['POST'])
 def add_favorite_pokemon(user_id, pokemon_id):
     user = db.session.get(User, user_id)
     pokemon = db.session.get(Pokemon, pokemon_id)
@@ -67,7 +67,7 @@ def add_favorite_pokemon(user_id, pokemon_id):
 # 3. ELIMINAR UN POKÉMON DE FAVORITOS DE UN USUARIO (DELETE)
 
 
-@favorites_bp.route('/user/<int:user_id>/favorites/<int:pokemon_id>', methods=['DELETE'])
+@favorites_bp.route('/user/<int:user_id>/favorites/<string:pokemon_id>', methods=['DELETE'])
 def delete_favorite_pokemon(user_id, pokemon_id):
     user = db.session.get(User, user_id)
     pokemon = db.session.get(Pokemon, pokemon_id)
