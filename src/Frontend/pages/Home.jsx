@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { Link } from "react-router-dom";
+import imagenRespaldo from "../../assets/no-card-image.png";
 
 export const Home = () => {
   const { store, dispatch } = useGlobalReducer();
@@ -24,13 +25,15 @@ export const Home = () => {
         // 💡 CORRECCIÓN CRÍTICA: La API devuelve directamente un Array, no un objeto con propiedad .v2
         if (data && Array.isArray(data)) {
           // Mapeamos el array directamente
-          const datosFormateados = data.map((carta) => ({
-            id: carta.id,
-            pokemon_name: carta.name,
-            image: carta.image // Extraemos la URL de la imagen y añadimos extensión de calidad si existe
-              ? `${carta.image}/low.png`
-              : "https://placehold.co", // Marcador de posición limpio si no hay imagen
-          }));
+          const datosFormateados = data.map((carta) => {
+            const tieneImagen = carta.image && carta.image.includes("http");
+
+            return {
+              id: String(carta.id), // 💡 ARREGLO DE TIPADO: Siempre será un string en tu store
+              pokemon_name: carta.name,
+              image: tieneImagen ? `${carta.image}/low.png` : imagenRespaldo, // Marcador de posición limpio si no hay imagen
+            };
+          });
 
           // Guardamos los datos limpios en tu store global y desactivamos el loading
           dispatch({ type: "API_LIST_SUCCESS", payload: datosFormateados });

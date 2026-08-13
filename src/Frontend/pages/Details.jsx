@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
+import imagenRespaldo from "../../assets/no-card-image.png";
 
 export const PokemonDetail = () => {
   const { id } = useParams();
@@ -13,8 +14,27 @@ export const PokemonDetail = () => {
     const obtenerDetallePokemon = async () => {
       try {
         dispatch({ type: "API_LOADING" });
+
+        // 1. Nos aseguramos de tratar el ID siempre como texto plano limpio
+        let idTexto = String(id).trim();
+
+        // 2. 💡 EL DETECTOR DEFINITIVO:
+        // Si la carta pertenece a la expansión de Unown "exu" y el parámetro de la URL
+        // contiene un "?", un "%" o el código "3f" (decodificado por React Router),
+        // inyectamos directamente el string con la doble codificación exigida por el servidor.
+        if (
+          idTexto.toLowerCase().startsWith("exu-") &&
+          (idTexto.includes("?") ||
+            idTexto.includes("%") ||
+            idTexto.toLowerCase().includes("3f"))
+        ) {
+          idTexto = "exu-%253F";
+        } else {
+          // Para todas las demás cartas estándar del proyecto, se aplica la codificación normal
+          idTexto = encodeURIComponent(idTexto);
+        }
         const response = await fetch(
-          `https://api.tcgdex.net/v2/en/cards/${id}`,
+          `https://api.tcgdex.net/v2/en/cards/${idTexto}`,
         );
 
         if (!response.ok) {
@@ -65,12 +85,15 @@ export const PokemonDetail = () => {
           <div className="col-12 col-md-5 text-center">
             <div className="p-3 bg-secondary bg-opacity-10 rounded shadow-lg">
               <img
-                src={
-                  card.image ? `${card.image}/high.png` : "https://placehold.co"
-                }
+                // 💡 CORRECCIÓN: Definidas proporciones correctas para el marcador de posición y evento de error
+                src={card.image ? `${card.image}/high.png` : imagenRespaldo}
                 alt={card.name}
                 className="img-fluid rounded-3 shadow"
                 style={{ maxHeight: "500px", objectFit: "contain" }}
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = imagenRespaldo;
+                }}
               />
             </div>
           </div>
