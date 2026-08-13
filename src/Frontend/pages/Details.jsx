@@ -7,7 +7,7 @@ export const PokemonDetail = () => {
   const navigate = useNavigate();
   const { store, dispatch } = useGlobalReducer();
 
-  const { data: card, loading, error } = store.api;
+  const { detail: card, loading, error } = store.api;
 
   useEffect(() => {
     const obtenerDetallePokemon = async () => {
@@ -22,7 +22,7 @@ export const PokemonDetail = () => {
         }
 
         const data = await response.json();
-        dispatch({ type: "API_SUCCESS", payload: data });
+        dispatch({ type: "API_DETAIL_SUCCESS", payload: data });
       } catch (err) {
         console.error("Error al cargar detalle:", err);
         dispatch({ type: "API_ERROR", payload: err.message });
@@ -30,6 +30,12 @@ export const PokemonDetail = () => {
     };
 
     if (id) obtenerDetallePokemon();
+    // === 💡 FUNCIÓN DE LIMPIEZA (CLEANUP) ===
+    // Se ejecuta de forma automática en React JUSTO cuando el usuario
+    // hace clic en volver atrás o cambia de página, limpiando el store global.
+    return () => {
+      dispatch({ type: "API_DETAIL_SUCCESS", payload: null });
+    };
   }, [id, dispatch]);
 
   return (
@@ -37,7 +43,7 @@ export const PokemonDetail = () => {
       {/* Botón para volver atrás de manera segura */}
       <button
         className="btn btn-outline-secondary mb-4"
-        onClick={() => navigate(-1)}
+        onClick={() => navigate("/")}
       >
         ← Volver a la Colección
       </button>

@@ -4,7 +4,8 @@ export const initialStore = () => {
     token: localStorage.getItem("jwt-token") || null,
     user: null,
     api: {
-      data: null,
+      list: [],
+      detail: null,
       loading: false,
       error: null,
     },
@@ -42,12 +43,24 @@ export default function storeReducer(store, action = {}) {
         },
       };
 
-    case "API_SUCCESS":
+    case "API_LIST_SUCCESS":
       return {
         ...store,
         api: {
-          data: action.payload,
+          ...store.api,
           loading: false,
+          list: action.payload, // Guarda solo la lista
+          error: null,
+        },
+      };
+
+    case "API_DETAIL_SUCCESS":
+      return {
+        ...store,
+        api: {
+          ...store.api,
+          loading: false,
+          detail: action.payload, // Guarda solo el detalle individual
           error: null,
         },
       };

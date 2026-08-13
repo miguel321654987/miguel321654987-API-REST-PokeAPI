@@ -6,7 +6,7 @@ export const Home = () => {
   const { store, dispatch } = useGlobalReducer();
 
   //Extraemos de forma limpia las variables directamente desde tu store global
-  const { data: pokemons, loading, error } = store.api;
+  const { list: pokemons, loading, error } = store.api;
 
   useEffect(() => {
     const obtenerPokemons = async () => {
@@ -33,7 +33,7 @@ export const Home = () => {
           }));
 
           // Guardamos los datos limpios en tu store global y desactivamos el loading
-          dispatch({ type: "API_SUCCESS", payload: datosFormateados });
+          dispatch({ type: "API_LIST_SUCCESS", payload: datosFormateados });
         } else {
           throw new Error( // Si por alguna razón la respuesta no es un array, lanzamos error estructurado
             "La respuesta del servidor no tiene el formato esperado.",
