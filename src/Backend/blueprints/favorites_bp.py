@@ -45,19 +45,17 @@ def add_favorite_pokemon(user_id, pokemon_id):
         raise APIException(
             f"El Pokémon con ID {pokemon_id} no existe", status_code=404)
 
-    # Validamos si ya existe la relación en la lista
     if pokemon in user.pokemon_favorites:
         raise APIException(
             f"El Pokémon '{pokemon.pokemon_name}' ya se encuentra en los favoritos de este usuario", status_code=409)
 
     try:
-        # Modificamos la relación many-to-many
         user.pokemon_favorites.append(pokemon)
         db.session.commit()
 
         return jsonify({
             "message": f"Pokémon '{pokemon.pokemon_name}' añadido con éxito a los favoritos del usuario {user_id}"
-        }), 200
+        }), 201
 
     except Exception as e:
         db.session.rollback()  # Cancelamos cualquier operación fallida en la base de datos
