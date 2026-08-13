@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import String, Boolean, Integer, Table, Column, ForeignKey
+from sqlalchemy import String, Boolean, Integer, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 db = SQLAlchemy()
@@ -9,7 +9,7 @@ db = SQLAlchemy()
 user_pokemon_association = db.Table(
     "user_pokemon_favorite",
     db.metadata,
-    db.Column("user_id", db.Integer(50), db.ForeignKey(
+    db.Column("user_id", db.Integer, db.ForeignKey(
         "users.id"), primary_key=True),
     db.Column("pokemon_id", db.String(50), db.ForeignKey(
         "pokemons.id"), primary_key=True)
