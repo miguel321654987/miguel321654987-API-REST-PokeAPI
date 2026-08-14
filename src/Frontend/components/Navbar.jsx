@@ -31,17 +31,29 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-4">
-      <div className="container-fluid">
-        {/* Logo o Nombre de la app */}
+    <nav className="navbar navbar-expand-lg  navbar-dark bg-dark px-4">
+      <div className="container-fluid d-flex justify-content-between">
         <Link to="/" className="navbar-brand font-weight-bold">
           🚀 PokemonWorld
         </Link>
-
-        <div className="d-flex align-items-center">
-          <Link to="/favoritos" className="btn btn-warning mt-4">
-            Ir a Mis Cartas Favoritas
-          </Link>
+        <div className="d-flex align-items-center gap-2">
+          <div className="btn-group">
+            <button
+              type="button"
+              className="btn btn-info dropdown-toggle btn-sm"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              Action
+            </button>
+            <ul className="dropdown-menu">
+              <li>
+                <Link to="/" className="dropdown-item">
+                  Action
+                </Link>
+              </li>
+            </ul>
+          </div>
           {/* RENDERIZADO CONDICIONAL: Evaluamos si existe un token en la tienda global */}
           {!store.token ? (
             <div className="d-flex align-items-center gap-2">
