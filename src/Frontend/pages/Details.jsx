@@ -15,22 +15,17 @@ export const PokemonDetail = () => {
       try {
         dispatch({ type: "API_LOADING" });
 
-        // 1. Nos aseguramos de tratar el ID siempre como texto plano limpio
+        // 💡 EL DETECTOR DEFINITIVO para la segunda Card:
         let idTexto = String(id).trim();
-
-        // 2. 💡 EL DETECTOR DEFINITIVO:
-        // Si la carta pertenece a la expansión de Unown "exu" y el parámetro de la URL
-        // contiene un "?", un "%" o el código "3f" (decodificado por React Router),
-        // inyectamos directamente el string con la doble codificación exigida por el servidor.
         if (
-          idTexto.toLowerCase().startsWith("exu-") &&
+          idTexto.toLowerCase().startsWith("exu-") && // Si la carta pertenece a la expansión "exu"
           (idTexto.includes("?") ||
             idTexto.includes("%") ||
             idTexto.toLowerCase().includes("3f"))
         ) {
-          idTexto = "exu-%253F";
+          idTexto = "exu-%253F"; // inyectamos el string con doble codificación exigida por el servidor
         } else {
-          // Para todas las demás cartas estándar del proyecto, se aplica la codificación normal
+          // Para las demás cartas se aplica la codificación normal
           idTexto = encodeURIComponent(idTexto);
         }
         const response = await fetch(
@@ -50,9 +45,10 @@ export const PokemonDetail = () => {
     };
 
     if (id) obtenerDetallePokemon();
+
     // === 💡 FUNCIÓN DE LIMPIEZA (CLEANUP) ===
-    // Se ejecuta de forma automática en React JUSTO cuando el usuario
-    // hace clic en volver atrás o cambia de página, limpiando el store global.
+    // Se ejecuta cuando el componente se desmonta o antes de una nueva renderización del componente
+
     return () => {
       dispatch({ type: "API_DETAIL_SUCCESS", payload: null });
     };
@@ -60,7 +56,6 @@ export const PokemonDetail = () => {
 
   return (
     <div className="container mt-5 text-light mb-5">
-      {/* Botón para volver atrás de manera segura */}
       <button
         className="btn btn-outline-secondary mb-4"
         onClick={() => navigate("/")}

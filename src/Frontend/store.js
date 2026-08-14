@@ -4,9 +4,9 @@ export const initialStore = () => {
     token: localStorage.getItem("jwt-token") || null,
     user: null,
     api: {
+      loading: false,
       list: [],
       detail: null,
-      loading: false,
       error: null,
     },
   };
