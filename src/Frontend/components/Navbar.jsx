@@ -1,16 +1,21 @@
 import { Link, useNavigate } from "react-router-dom";
-import useGlobalReducer from "../hooks/useGlobalReducer.jsx"; // Ajusta la ruta si es necesario
+import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { toast } from "react-toastify";
 
 export const Navbar = () => {
-  // 📥 Extraemos store y la función unificada handleLogout desde el estado global
-  const { store, handleLogout } = useGlobalReducer();
+  // 📥 Extraemos 'store' y 'actions' desde nuestro hook global unificado
+  const { store, actions } = useGlobalReducer();
   const navigate = useNavigate();
 
   const clickLogout = () => {
-    handleLogout(); // 1. Ejecuta el borrado de localStorage, Reducer y abre el modal
-    toast.info("Sesión cerrada correctamente"); // 2. Muestra la notificación visual
-    navigate("/"); // 3. Redirige a la página de inicio por seguridad
+    // 1. Ejecuta el flujo centralizado de actions.js (borra token, hace dispatch y abre el modal)
+    actions.handleLogout();
+
+    // 2. Muestra la notificación visual
+    toast.info("Sesión cerrada correctamente");
+
+    // 3. Redirige a la página de inicio por seguridad
+    navigate("/");
   };
 
   // 🌟 FUNCIÓN PARA ABRIR EL MODAL DE MANERA SEGURA EN REACT
@@ -31,12 +36,13 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="navbar navbar-expand-lg  navbar-dark bg-dark px-4">
+    <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-4">
       <div className="container-fluid d-flex justify-content-between">
         <Link to="/" className="navbar-brand font-weight-bold">
           🚀 PokemonWorld
         </Link>
         <div className="d-flex align-items-center gap-2">
+          {/* Menú Dropdown de Acciones */}
           <div className="btn-group">
             <button
               type="button"
@@ -44,16 +50,34 @@ export const Navbar = () => {
               data-bs-toggle="dropdown"
               aria-expanded="false"
             >
-              Action
+              Favoritos ({store.favorites ? store.favorites.length : 0})
             </button>
-            <ul className="dropdown-menu">
-              <li>
-                <Link to="/" className="dropdown-item">
-                  Action
-                </Link>
-              </li>
+            <ul
+              className="dropdown-menu dropdown-menu-end"
+              style={{ minWidth: "200px" }}
+            >
+              {store.favorites && store.favorites.length > 0 ? (
+                store.favorites.map((fav) => (
+                  <li key={fav.id}>
+                    <Link
+                      to={`/pokemon/${fav.id}`}
+                      className="dropdown-item d-flex align-items-center justify-content-between"
+                    >
+                      <span>{fav.pokemon_name}</span>
+                      <i className="bi bi-heart-fill text-danger small"></i>
+                    </Link>
+                  </li>
+                ))
+              ) : (
+                <li>
+                  <span className="dropdown-item text-muted small">
+                    No hay favoritos
+                  </span>
+                </li>
+              )}
             </ul>
           </div>
+
           {/* RENDERIZADO CONDICIONAL: Evaluamos si existe un token en la tienda global */}
           {!store.token ? (
             <div className="d-flex align-items-center gap-2">
@@ -65,11 +89,12 @@ export const Navbar = () => {
               </button>
             </div>
           ) : (
-            // Opción B: El usuario SÍ está autenticado -> Mostramos botón de Cerrar Sesión
+            // El usuario SÍ está autenticado -> Mostramos bienvenida y botón de Cerrar Sesión
             <div className="d-flex align-items-center gap-3">
               {store.user && (
-                <span className="text-light me-2">
-                  ¡Hola, {store.user.name}!
+                <span className="text-light me-2 small">
+                  ¡Hola,{" "}
+                  {store.user.pokemon_name || store.user.name || "Usuario"}!
                 </span>
               )}
               <button className="btn btn-danger btn-sm" onClick={clickLogout}>
