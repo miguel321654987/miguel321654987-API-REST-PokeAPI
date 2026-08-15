@@ -15,7 +15,7 @@ export const initialStore = () => {
 
 export default function storeReducer(store, action = {}) {
   switch (action.type) {
-    case "LOGIN":
+    case "LOGIN_SUCCESS":
       return {
         ...store,
         token: action.payload,
