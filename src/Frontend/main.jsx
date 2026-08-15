@@ -8,11 +8,13 @@ import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
 import { RouterProvider } from "react-router-dom"; // Import RouterProvider to use the router
 import { router } from "./routes"; // Import the router configuration
-import { StoreProvider } from "./hooks/useGlobalReducer"; // Import the StoreProvider for global state management
+import { StoreProvider } from "./hooks/StoreProvider.jsx"; // Import the StoreProvider for global state management
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { ToastContainer } from "react-toastify";
 
-const Main = () => {
+import { BackendURL } from "./components/BackendURL.jsx";
+
+export const Main = () => {
   if (
     !import.meta.env.VITE_BACKEND_URL ||
     import.meta.env.VITE_BACKEND_URL == ""
@@ -22,6 +24,7 @@ const Main = () => {
         <BackendURL />
       </React.StrictMode>
     );
+
   return (
     <React.StrictMode>
       {/* Provide global state to all components */}
