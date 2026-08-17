@@ -1,5 +1,37 @@
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
+/**
+ * 🔧 HELPER DE CIERRE DEFENSIVO DE MODALES
+ * En local (VS Code), Bootstrap a veces no está completamente inicializado en el instante exacto
+ * del setTimeout. Este helper intenta cerrar el modal de 3 formas progresivas para garantizar
+ * que se cierre correctamente sin dejar abierto el backdrop ni el overlay.
+ */
+const closeModalSafely = (modalId) => {
+  const modalEl = document.getElementById(modalId);
+  if (!modalEl) return;
+
+  // Intento 1: Usar la API oficial de Bootstrap si está disponible
+  if (window.bootstrap?.Modal) {
+    try {
+      const modalInstance = window.bootstrap.Modal.getOrCreateInstance(modalEl);
+      modalInstance.hide();
+      return;
+    } catch (error) {
+      console.warn(`Bootstrap Modal.hide() falló para #${modalId}, usando fallback CSS`, error);
+    }
+  }
+
+  // Intento 2 (Fallback para local): Ocultar manualmente con CSS y limpiar el backdrop
+  modalEl.classList.remove("show");
+  modalEl.setAttribute("aria-hidden", "true");
+  modalEl.style.display = "none";
+
+  const backdrop = document.querySelector(".modal-backdrop");
+  if (backdrop) backdrop.remove();
+
+  document.body.classList.remove("modal-open");
+};
+
 export const getActions = (store, dispatch) => {
   return {
     // === 🔐 CONTROL DE SESIÓN (AUTENTICACIÓN) ===
@@ -110,3 +142,6 @@ export const getActions = (store, dispatch) => {
     },
   };
 };
+
+// Exportar helper para ser usado desde componentes (Login, Signup)
+export { closeModalSafely };

@@ -1,5 +1,6 @@
 import { useState } from "react"; // 💡 Ya no necesitas 'useRef'
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
+import { closeModalSafely } from "../hooks/actions.js";
 import { toast } from "react-toastify";
 
 export const Login = ({ id }) => {
@@ -79,21 +80,16 @@ export const Login = ({ id }) => {
       });
       toast.success("¡Sesión iniciada!");
 
-      // 🌟 SOLUCIÓN AQUÍ: Cierre seguro usando la API oficial de Bootstrap
+      // 🌟 CIERRE DEFENSIVO DEL MODAL (Necesario para local VS Code)
+      // En entorno local, Bootstrap a veces tarda en inicializarse completamente.
+      // El helper closeModalSafely intenta cerrar con Bootstrap primero, y si falla,
+      // lo hace manualmente con CSS para garantizar que el modal se cierre sin dejar backdrop abierto.
       setTimeout(() => {
-        const modalElement = document.getElementById(id); // Buscamos el contenedor del modal por su id
-
-        if (modalElement && window.bootstrap && window.bootstrap.Modal) {
-          // Obtenemos la instancia que Bootstrap ya creó o creamos una limpia
-          const modalInstance =
-            window.bootstrap.Modal.getOrCreateInstance(modalElement);
-          modalInstance.hide(); // 🚀 Cierra el modal y elimina el fondo (backdrop) de forma segura
-        }
-
+        closeModalSafely(id);
         dispatch({ type: "SET_MESSAGE", payload: null });
         setEmail("");
         setPassword("");
-      }, 1000);
+      }, 300);
     } catch {
       dispatch({
         type: "SET_MESSAGE",
