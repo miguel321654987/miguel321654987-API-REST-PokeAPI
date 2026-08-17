@@ -1,16 +1,14 @@
+import defaultImage from "../../assets/no-card-image.png";
+
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 /**
  * 🔧 HELPER DE CIERRE DEFENSIVO DE MODALES
- * En local (VS Code), Bootstrap a veces no está completamente inicializado en el instante exacto
- * del setTimeout. Este helper intenta cerrar el modal de 3 formas progresivas para garantizar
- * que se cierre correctamente sin dejar abierto el backdrop ni el overlay.
  */
 const closeModalSafely = (modalId) => {
   const modalEl = document.getElementById(modalId);
   if (!modalEl) return;
 
-  // Intento 1: Usar la API oficial de Bootstrap si está disponible
   if (window.bootstrap?.Modal) {
     try {
       const modalInstance = window.bootstrap.Modal.getOrCreateInstance(modalEl);
@@ -24,7 +22,6 @@ const closeModalSafely = (modalId) => {
     }
   }
 
-  // Intento 2 (Fallback para local): Ocultar manualmente con CSS y limpiar el backdrop
   modalEl.classList.remove("show");
   modalEl.setAttribute("aria-hidden", "true");
   modalEl.style.display = "none";
@@ -33,19 +30,16 @@ const closeModalSafely = (modalId) => {
   if (backdrop) backdrop.remove();
 
   document.body.classList.remove("modal-open");
+  document.body.style.overflow = ""; // 🔥 Restablece el scroll si Bootstrap se quedó colgado
 };
 
 /**
  * 🔧 HELPER DE APERTURA DEFENSIVA DE MODALES
- * Complemento para closeModalSafely. Abre un modal de forma defensiva en local (VS Code).
- * Intenta primero con Bootstrap, y si no está disponible, lo abre manualmente con CSS.
- * Necesario en local porque el timing de Bootstrap puede no coincidir exactamente.
  */
 const openModalSafely = (modalId) => {
   const modalEl = document.getElementById(modalId);
   if (!modalEl) return;
 
-  // Intento 1: Usar la API oficial de Bootstrap si está disponible
   if (window.bootstrap?.Modal) {
     try {
       const modalInstance = window.bootstrap.Modal.getOrCreateInstance(modalEl);
@@ -59,12 +53,10 @@ const openModalSafely = (modalId) => {
     }
   }
 
-  // Intento 2 (Fallback para local): Abrir manualmente con CSS
   modalEl.classList.add("show");
   modalEl.setAttribute("aria-hidden", "false");
   modalEl.style.display = "block";
 
-  // Crear y agregar backdrop manualmente
   if (!document.querySelector(".modal-backdrop")) {
     const backdrop = document.createElement("div");
     backdrop.className = "modal-backdrop fade show";
@@ -76,29 +68,44 @@ const openModalSafely = (modalId) => {
 
 /**
  * 🔧 HELPER PARA CAMBIAR ENTRE MODALES
- * Cierra un modal y abre otro de forma defensiva. Útil para transiciones entre
- * Login y Signup sin dejar backdrops o overlays atrapados.
- * Necesario en local VS Code porque Bootstrap a veces no está completamente
- * inicializado en el instante exacto del evento click.
  */
 const switchModals = (closeId, openId) => {
   closeModalSafely(closeId);
-  // Pequeño delay para asegurar que el primero se cerró antes de abrir el siguiente
-  setTimeout(() => {
-    openModalSafely(openId);
-  }, 100);
+
+  // 🔥 Escucha el evento nativo de Bootstrap para abrir el siguiente solo cuando el primero se oculte del todo
+  const closeEl = document.getElementById(closeId);
+  if (closeEl && window.bootstrap?.Modal) {
+    closeEl.addEventListener(
+      "hidden.bs.modal",
+      () => {
+        openModalSafely(openId);
+      },
+      { once: true },
+    ); // { once: true } evita que el evento se quede escuchando siempre
+  } else {
+    // Fallback si Bootstrap no está listo
+    setTimeout(() => {
+      openModalSafely(openId);
+    }, 150);
+  }
 };
 
 export const getActions = (store, dispatch) => {
+  // 🔥 Helper interno para incluir el Token JWT de forma automática y segura
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("jwt-token");
+    return {
+      "Content-Type": "application/json",
+      ...(token && { Authorization: `Bearer ${token}` }), // Envía Bearer token si existe
+    };
+  };
+
   return {
-    // === 🔐 CONTROL DE SESIÓN (AUTENTICACIÓN) ===
+    // === 🔐 CONTROL DE SESIÓN ===
     handleLogout: () => {
-      // 1. Limpieza inmediata de datos locales y globales
       localStorage.removeItem("jwt-token");
       dispatch({ type: "LOGOUT" });
 
-      // 2. El modal de login se abre con el patrón nativo de Bootstrap en el botón del Navbar.
-      // No intentamos abrirlo manualmente aquí para evitar el warning en local.
       dispatch({
         type: "SET_MESSAGE",
         payload: {
@@ -107,29 +114,33 @@ export const getActions = (store, dispatch) => {
         },
       });
 
-      // 3. Limpiar el mensaje tras unos segundos adicionales
       setTimeout(() => {
         dispatch({ type: "SET_MESSAGE", payload: null });
       }, 3000);
     },
 
-    // === 👾 PETICIONES DE POKÉMON (API EXTERNA) ===
+    // === 👾 PETICIONES DE POKÉMON ===
     obtenerPokemons: async () => {
       if (store.api.list && store.api.list.length > 0) return;
 
       try {
         dispatch({ type: "API_LOADING" });
-        const response = await fetch("https://tcgdex.net");
+        const response = await fetch(
+          "https://api.tcgdex.net/v2/en/cards?pagination:page=1&pagination:itemsPerPage=20",
+        );
+
+        if (!response.ok)
+          throw new Error("Error al obtener los pokémons de la API externa");
         const data = await response.json();
 
-        if (data && Array.isArray(data)) {
-          const datosFormateados = data.map((carta) => ({
+        // 🔥 Corrección: TCGdex a veces devuelve un objeto con paginación, no un Array directo
+        const listaCartas = Array.isArray(data) ? data : data.cards;
+
+        if (listaCartas && Array.isArray(listaCartas)) {
+          const datosFormateados = listaCartas.map((carta) => ({
             id: String(carta.id),
             pokemon_name: carta.name,
-            image:
-              carta.image && carta.image.includes("http")
-                ? `${carta.image}/low.png`
-                : "",
+            image: carta.image ? `${carta.image}/low.png` : defaultImage, // Simplificado el fallback
           }));
           dispatch({ type: "API_LIST_SUCCESS", payload: datosFormateados });
         } else {
@@ -143,11 +154,65 @@ export const getActions = (store, dispatch) => {
       }
     },
 
-    // === ❤️ GESTIÓN DE FAVORITOS (TU BACKEND FLASK) ===
+    // === 👾 PETICIONES DE POKÉMON (Añade esto dentro de getActions) ===
+    obtenerDetallePokemon: async (id) => {
+      try {
+        dispatch({ type: "API_LOADING" });
+
+        // 💡 Detector definitivo para la expansión "exu" con caracteres especiales
+        let idTexto = String(id).trim();
+        if (
+          idTexto.toLowerCase().startsWith("exu-") &&
+          (idTexto.includes("?") ||
+            idTexto.includes("%") ||
+            idTexto.toLowerCase().includes("3f"))
+        ) {
+          idTexto = "exu-%253F"; // Doble codificación requerida por este servidor específico
+        } else {
+          idTexto = encodeURIComponent(idTexto);
+        }
+
+        const response = await fetch(
+          `https://api.tcgdex.net/v2/en/cards/${idTexto}`,
+        );
+
+        if (!response.ok) {
+          throw new Error("No se pudo encontrar la información de esta carta.");
+        }
+
+        const data = await response.json();
+
+        // 🔥 FORMATEO DEFENSIVO: Validamos la imagen aquí usando 'defaultImage'
+        // TCGdex suele estructurar la imagen de la carta como un string o dentro de un objeto dependiendo de la versión
+        const imagenFinal = data.image
+          ? data.image.includes("http")
+            ? `${data.image}/high.png`
+            : data.image
+          : defaultImage;
+
+        const detalleFormateado = {
+          ...data,
+          image: imagenFinal, // Nos aseguramos de que siempre contenga algo válido
+        };
+
+        dispatch({ type: "API_DETAIL_SUCCESS", payload: detalleFormateado });
+      } catch (err) {
+        console.error("Error al cargar detalle:", err);
+        dispatch({ type: "API_ERROR", payload: err.message });
+      }
+    },
+
+    // 🔥 Helper para limpiar el detalle al desmontar el componente
+    limpiarDetallePokemon: () => {
+      dispatch({ type: "API_DETAIL_SUCCESS", payload: null });
+    },
+
+    // === ❤️ GESTIÓN DE FAVORITOS ===
     cargarFavoritosBackend: async (userId) => {
       try {
         const response = await fetch(
           `${BACKEND_URL}/api/favorites/user/${userId}/favorites`,
+          { headers: getAuthHeaders() }, // Añadida seguridad
         );
         if (!response.ok)
           throw new Error("Error al obtener los favoritos del servidor");
@@ -168,10 +233,10 @@ export const getActions = (store, dispatch) => {
           `${BACKEND_URL}/api/favorites/user/${userId}/favorites/${pokemon.id}`,
           {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: getAuthHeaders(), // Centralizado y seguro
           },
         );
-        if (response.status === 409) return; // Validación de conflicto ya capturada por Flask
+        if (response.status === 409) return;
         if (!response.ok)
           throw new Error("No se pudo añadir el favorito en el servidor");
 
@@ -187,6 +252,7 @@ export const getActions = (store, dispatch) => {
           `${BACKEND_URL}/api/favorites/user/${userId}/favorites/${pokemonId}`,
           {
             method: "DELETE",
+            headers: getAuthHeaders(), // Asegura que solo el dueño borre
           },
         );
         if (!response.ok)
@@ -200,5 +266,4 @@ export const getActions = (store, dispatch) => {
   };
 };
 
-// Exportar helpers para ser usados desde componentes (Login, Signup)
 export { closeModalSafely, openModalSafely, switchModals };

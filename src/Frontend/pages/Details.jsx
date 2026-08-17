@@ -1,58 +1,25 @@
 import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
-import imagenRespaldo from "../../assets/no-card-image.png";
 
 export const PokemonDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { store, dispatch } = useGlobalReducer();
+  const { store, actions } = useGlobalReducer();
 
   const { detail: card, loading, error } = store.api;
 
   useEffect(() => {
-    const obtenerDetallePokemon = async () => {
-      try {
-        dispatch({ type: "API_LOADING" });
-
-        // 💡 EL DETECTOR DEFINITIVO para la segunda Card:
-        let idTexto = String(id).trim();
-        if (
-          idTexto.toLowerCase().startsWith("exu-") && // Si la carta pertenece a la expansión "exu"
-          (idTexto.includes("?") ||
-            idTexto.includes("%") ||
-            idTexto.toLowerCase().includes("3f"))
-        ) {
-          idTexto = "exu-%253F"; // inyectamos el string con doble codificación exigida por el servidor
-        } else {
-          // Para las demás cartas se aplica la codificación normal
-          idTexto = encodeURIComponent(idTexto);
-        }
-        const response = await fetch(
-          `https://api.tcgdex.net/v2/en/cards/${idTexto}`,
-        );
-
-        if (!response.ok) {
-          throw new Error("No se pudo encontrar la información de esta carta.");
-        }
-
-        const data = await response.json();
-        dispatch({ type: "API_DETAIL_SUCCESS", payload: data });
-      } catch (err) {
-        console.error("Error al cargar detalle:", err);
-        dispatch({ type: "API_ERROR", payload: err.message });
-      }
-    };
-
-    if (id) obtenerDetallePokemon();
+    if (id) {
+      actions.obtenerDetallePokemon(id);
+    }
 
     // === 💡 FUNCIÓN DE LIMPIEZA (CLEANUP) ===
-    // Se ejecuta cuando el componente se desmonta o antes de una nueva renderización del componente
-
+    // Centralizada también en las acciones para no mutar el estado desde aquí
     return () => {
-      dispatch({ type: "API_DETAIL_SUCCESS", payload: null });
+      actions.limpiarDetallePokemon();
     };
-  }, [id, dispatch]);
+  }, [id]);
 
   return (
     <div className="container mt-5 text-light mb-5">
@@ -79,16 +46,11 @@ export const PokemonDetail = () => {
           {/* Columna Izquierda: Imagen de la carta */}
           <div className="col-12 col-md-5 text-center">
             <div className="p-3 bg-secondary bg-opacity-10 rounded shadow-lg">
+              {/* 🔥 Limpio y directo: la acción garantiza que 'card.image' siempre existe */}
               <img
-                // 💡 CORRECCIÓN: Definidas proporciones correctas para el marcador de posición y evento de error
-                src={card.image ? `${card.image}/high.png` : imagenRespaldo}
-                alt={card.name}
-                className="img-fluid rounded-3 shadow"
-                style={{ maxHeight: "500px", objectFit: "contain" }}
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = imagenRespaldo;
-                }}
+                src={card.image}
+                className="img-fluid rounded-start"
+                alt={card.name || "Tarjeta Pokémon"}
               />
             </div>
           </div>
