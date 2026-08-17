@@ -1,3 +1,5 @@
+import defaultImage from "../../assets/no-card-image.png";
+
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 /**
@@ -119,7 +121,9 @@ export const getActions = (store, dispatch) => {
 
       try {
         dispatch({ type: "API_LOADING" });
-        const response = await fetch("https://tcgdex.net");
+        const response = await fetch(
+          "https://api.tcgdex.net/v2/en/cards?pagination:page=1&pagination:itemsPerPage=20",
+        );
         const data = await response.json();
 
         if (data && Array.isArray(data)) {
@@ -129,7 +133,7 @@ export const getActions = (store, dispatch) => {
             image:
               carta.image && carta.image.includes("http")
                 ? `${carta.image}/low.png`
-                : "",
+                : defaultImage,
           }));
           dispatch({ type: "API_LIST_SUCCESS", payload: datosFormateados });
         } else {
