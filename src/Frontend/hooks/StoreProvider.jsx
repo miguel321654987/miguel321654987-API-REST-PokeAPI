@@ -9,21 +9,19 @@ export function StoreProvider({ children }) {
   const [store, dispatch] = useReducer(storeReducer, initialStore());
 
   useEffect(() => {
-    // 🚀 EXTRACCIÓN LIMPIA: Sacamos el token de forma aislada
-    const { token } = store;
+    const token = store.token;
+
+    if (!token) return;
 
     const verificarSesionYCargarDatos = async () => {
-      // Evaluamos la variable local aislada
-      if (!token) return;
-
       const actions = getActions(store, dispatch);
 
       try {
-        const userResponse = await fetch(`${BACKEND_URL}/api/user/profile`, {
+        const userResponse = await fetch(`${BACKEND_URL}/api/auth/profile`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Usamos la variable aislada
+            Authorization: `Bearer ${token}`,
           },
         });
 
@@ -33,10 +31,15 @@ export function StoreProvider({ children }) {
         }
 
         const userData = await userResponse.json();
-        dispatch({ type: "LOGIN_SUCCESS", payload: userData });
+        const profile = userData.results || userData;
 
-        if (userData && userData.id) {
-          await actions.cargarFavoritosBackend(userData.id);
+        dispatch({
+          type: "LOGIN_SUCCESS",
+          payload: { token, user: profile },
+        });
+
+        if (profile && profile.id) {
+          await actions.cargarFavoritosBackend(profile.id);
         }
       } catch (error) {
         console.error("Error al sincronizar sesión con el servidor:", error);
@@ -44,9 +47,7 @@ export function StoreProvider({ children }) {
     };
 
     verificarSesionYCargarDatos();
-
-    // ✅ SOLUCIÓN: Al pasar 'store', React sabe exactamente cuándo rastrear cambios sin romper el flujo
-  }, [store]);
+  }, [store.token, dispatch]);
 
   return (
     <StoreContext.Provider value={{ store, dispatch }}>

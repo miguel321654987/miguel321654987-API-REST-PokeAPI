@@ -5,6 +5,7 @@ import os
 from flask import Flask, jsonify
 from flask_migrate import Migrate
 from flask_cors import CORS
+from dotenv import load_dotenv
 from Backend.utils import APIException, generate_sitemap
 from Backend.admin import setup_admin
 from Backend.models import db
@@ -12,11 +13,15 @@ from flask_jwt_extended import JWTManager
 from Backend.routes import api
 from Backend.extensions import bcrypt
 
+load_dotenv()
+
 app = Flask(__name__)
 
 CORS(app)
 
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
+# Nota: este fallback es para trabajar en modo local desde VS Code/localhost.
+app.config['JWT_SECRET_KEY'] = os.getenv(
+    'JWT_SECRET_KEY', 'local-dev-secret-key')
 
 jwt = JWTManager(app)
 
