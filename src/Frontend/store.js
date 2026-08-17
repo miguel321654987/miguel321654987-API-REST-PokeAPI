@@ -15,11 +15,17 @@ export const initialStore = () => {
 
 export default function storeReducer(store, action = {}) {
   switch (action.type) {
-    case "LOGIN_SUCCESS":
+    case "LOGIN_SUCCESS": {
+      const payload = action.payload || {};
+      const nextToken = payload.token ?? payload;
+      const nextUser = payload.user ?? null;
+
       return {
         ...store,
-        token: action.payload,
+        token: nextToken,
+        user: nextUser,
       };
+    }
 
     case "LOGOUT":
       return {

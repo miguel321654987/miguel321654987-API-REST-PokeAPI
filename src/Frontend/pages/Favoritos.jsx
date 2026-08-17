@@ -10,7 +10,7 @@ export const Favoritos = () => {
   const { data: favorito, loading, error } = store.api;
 
   // Simulamos el ID del usuario logueado (Hardcodeado a 1 para hacer las pruebas iniciales)
-  const USER_ID = 1;
+  const user_id = 1;
 
   useEffect(() => {
     const obtenerFavoritos = async () => {
@@ -18,7 +18,7 @@ export const Favoritos = () => {
         dispatch({ type: "API_LOADING" });
         // Hacemos la petición a tu servidor Flask (ajusta la URL según tu entorno)
         const response = await fetch(
-          `http://localhost:5000/api/users/${USER_ID}/favorites`,
+          `http://localhost:3000/api/favorites//user/${user_id}/favorites`,
         );
 
         if (!response.ok) {
@@ -31,7 +31,7 @@ export const Favoritos = () => {
         const favoritosFormateados = data.map((fav) => ({
           id: fav.id, // ej: "basep-1"
           pokemon_name: fav.pokemon_name, // ej: "Pikachu"
-          image: `https://tcgdex.net{fav.id}/low.png`,
+          image: `https://tcgdex.net${fav.id}/low.png`,
         }));
 
         dispatch({ type: "API_SUCCESS", payload: favoritosFormateados });

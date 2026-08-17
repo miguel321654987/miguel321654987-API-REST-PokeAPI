@@ -18,23 +18,6 @@ export const Navbar = () => {
     navigate("/");
   };
 
-  // 🌟 FUNCIÓN PARA ABRIR EL MODAL DE MANERA SEGURA EN REACT
-  const abrirLoginModal = () => {
-    const modalElement = document.getElementById("loginModal");
-
-    if (modalElement) {
-      if (window.bootstrap && window.bootstrap.Modal) {
-        const modalInstance =
-          window.bootstrap.Modal.getOrCreateInstance(modalElement);
-        modalInstance.show();
-      } else {
-        console.error(
-          "Bootstrap JS no está disponible en 'window.bootstrap'. Revisa tu index.html.",
-        );
-      }
-    }
-  };
-
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-4">
       <div className="container-fluid d-flex justify-content-between">
@@ -81,9 +64,11 @@ export const Navbar = () => {
           {/* RENDERIZADO CONDICIONAL: Evaluamos si existe un token en la tienda global */}
           {!store.token ? (
             <div className="d-flex align-items-center gap-2">
+              {/* 🌟 Eliminamos onClick y usamos atributos nativos de Bootstrap */}
               <button
                 className="btn btn-outline-light btn-sm"
-                onClick={abrirLoginModal}
+                data-bs-toggle="modal"
+                data-bs-target="#loginModal"
               >
                 Iniciar Sesión
               </button>

@@ -69,7 +69,10 @@ export const Login = ({ id }) => {
 
       const data = await resp.json();
       localStorage.setItem("jwt-token", data.token);
-      dispatch({ type: "LOGIN", payload: data.token });
+      dispatch({
+        type: "LOGIN_SUCCESS",
+        payload: { token: data.token, user: null },
+      });
       dispatch({
         type: "SET_MESSAGE",
         payload: { msg: "¡Sesión iniciada!", status: 200 },

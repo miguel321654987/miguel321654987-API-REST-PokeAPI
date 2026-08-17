@@ -108,7 +108,7 @@ def create_token():
     }), 200
 
 
-@user_bp.route("/demo", methods=["GET"])
+@user_bp.route("/profile", methods=["GET"])
 @jwt_required()
 def protected():
     # Accede a la identidad del usuario actual
