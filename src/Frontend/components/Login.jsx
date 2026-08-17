@@ -1,6 +1,6 @@
 import { useState } from "react"; // 💡 Ya no necesitas 'useRef'
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
-import { closeModalSafely } from "../hooks/actions.js";
+import { closeModalSafely, switchModals } from "../hooks/actions.js";
 import { toast } from "react-toastify";
 
 export const Login = ({ id }) => {
@@ -9,20 +9,12 @@ export const Login = ({ id }) => {
   const [password, setPassword] = useState("");
 
   const abrirSignupModal = () => {
-    const loginModal = document.getElementById(id);
-    const signupModal = document.getElementById("signupModal");
-
-    if (loginModal && window.bootstrap?.Modal) {
-      const loginInstance =
-        window.bootstrap.Modal.getOrCreateInstance(loginModal);
-      loginInstance.hide();
-    }
-
-    if (signupModal && window.bootstrap?.Modal) {
-      const signupInstance =
-        window.bootstrap.Modal.getOrCreateInstance(signupModal);
-      signupInstance.show();
-    }
+    // 🌟 CAMBIO DEFENSIVO DE MODAL (Necesario para local VS Code)
+    // En lugar de intentar abrir/cerrar con Bootstrap directamente,
+    // usamos switchModals que maneja el timing de forma defensiva.
+    // En local, Bootstrap a veces no está completamente inicializado en el instante exacto del click,
+    // por lo que el helper intenta primero con Bootstrap y hace fallback a CSS si es necesario.
+    switchModals(id, "signupModal");
   };
 
   const handleLogin = async (e) => {

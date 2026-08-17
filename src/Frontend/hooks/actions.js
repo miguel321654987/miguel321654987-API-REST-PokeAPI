@@ -35,6 +35,60 @@ const closeModalSafely = (modalId) => {
   document.body.classList.remove("modal-open");
 };
 
+/**
+ * 🔧 HELPER DE APERTURA DEFENSIVA DE MODALES
+ * Complemento para closeModalSafely. Abre un modal de forma defensiva en local (VS Code).
+ * Intenta primero con Bootstrap, y si no está disponible, lo abre manualmente con CSS.
+ * Necesario en local porque el timing de Bootstrap puede no coincidir exactamente.
+ */
+const openModalSafely = (modalId) => {
+  const modalEl = document.getElementById(modalId);
+  if (!modalEl) return;
+
+  // Intento 1: Usar la API oficial de Bootstrap si está disponible
+  if (window.bootstrap?.Modal) {
+    try {
+      const modalInstance = window.bootstrap.Modal.getOrCreateInstance(modalEl);
+      modalInstance.show();
+      return;
+    } catch (error) {
+      console.warn(
+        `Bootstrap Modal.show() falló para #${modalId}, usando fallback CSS`,
+        error,
+      );
+    }
+  }
+
+  // Intento 2 (Fallback para local): Abrir manualmente con CSS
+  modalEl.classList.add("show");
+  modalEl.setAttribute("aria-hidden", "false");
+  modalEl.style.display = "block";
+
+  // Crear y agregar backdrop manualmente
+  if (!document.querySelector(".modal-backdrop")) {
+    const backdrop = document.createElement("div");
+    backdrop.className = "modal-backdrop fade show";
+    document.body.appendChild(backdrop);
+  }
+
+  document.body.classList.add("modal-open");
+};
+
+/**
+ * 🔧 HELPER PARA CAMBIAR ENTRE MODALES
+ * Cierra un modal y abre otro de forma defensiva. Útil para transiciones entre
+ * Login y Signup sin dejar backdrops o overlays atrapados.
+ * Necesario en local VS Code porque Bootstrap a veces no está completamente
+ * inicializado en el instante exacto del evento click.
+ */
+const switchModals = (closeId, openId) => {
+  closeModalSafely(closeId);
+  // Pequeño delay para asegurar que el primero se cerró antes de abrir el siguiente
+  setTimeout(() => {
+    openModalSafely(openId);
+  }, 100);
+};
+
 export const getActions = (store, dispatch) => {
   return {
     // === 🔐 CONTROL DE SESIÓN (AUTENTICACIÓN) ===
@@ -146,5 +200,5 @@ export const getActions = (store, dispatch) => {
   };
 };
 
-// Exportar helper para ser usado desde componentes (Login, Signup)
-export { closeModalSafely };
+// Exportar helpers para ser usados desde componentes (Login, Signup)
+export { closeModalSafely, openModalSafely, switchModals };
