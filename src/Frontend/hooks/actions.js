@@ -17,7 +17,10 @@ const closeModalSafely = (modalId) => {
       modalInstance.hide();
       return;
     } catch (error) {
-      console.warn(`Bootstrap Modal.hide() falló para #${modalId}, usando fallback CSS`, error);
+      console.warn(
+        `Bootstrap Modal.hide() falló para #${modalId}, usando fallback CSS`,
+        error,
+      );
     }
   }
 
