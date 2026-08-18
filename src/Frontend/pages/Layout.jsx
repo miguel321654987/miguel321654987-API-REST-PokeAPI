@@ -8,8 +8,8 @@ export const Layout = () => {
   return (
     <>
       <Navbar />
-      <Login id="loginModal" />
-      <Signup id="signupModal" />
+      <Login loginModal="loginModal" />
+      <Signup signupModal="signupModal" />
       <main>
         <Outlet />
       </main>

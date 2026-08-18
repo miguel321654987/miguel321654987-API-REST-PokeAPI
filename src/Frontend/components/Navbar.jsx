@@ -1,20 +1,15 @@
 import { Link, useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
+import { openModalSafely } from "../utils.js"; // 🔥 CORRECCIÓN 1: Importamos el helper seguro
 import { toast } from "react-toastify";
 
 export const Navbar = () => {
-  // 📥 Extraemos 'store' y 'actions' desde nuestro hook global unificado
   const { store, actions } = useGlobalReducer();
   const navigate = useNavigate();
 
   const clickLogout = () => {
-    // 1. Ejecuta el flujo centralizado de actions.js (borra token, hace dispatch y abre el modal)
     actions.handleLogout();
-
-    // 2. Muestra la notificación visual
     toast.info("Sesión cerrada correctamente");
-
-    // 3. Redirige a la página de inicio por seguridad
     navigate("/");
   };
 
@@ -61,20 +56,20 @@ export const Navbar = () => {
             </ul>
           </div>
 
-          {/* RENDERIZADO CONDICIONAL: Evaluamos si existe un token en la tienda global */}
+          {/* RENDERIZADO CONDICIONAL */}
           {!store.token ? (
             <div className="d-flex align-items-center gap-2">
-              {/* 🌟 Eliminamos onClick y usamos atributos nativos de Bootstrap */}
+              {/* 🔥 CORRECCIÓN 2: Eliminamos los atributos nativos data-bs-* que causaban */}
+              {/* el error de la consola y usamos el control seguro por JS de openModalSafely */}
               <button
+                type="button"
                 className="btn btn-outline-light btn-sm"
-                data-bs-toggle="modal"
-                data-bs-target="#loginModal"
+                onClick={() => openModalSafely("loginModal")}
               >
                 Iniciar Sesión
               </button>
             </div>
           ) : (
-            // El usuario SÍ está autenticado -> Mostramos bienvenida y botón de Cerrar Sesión
             <div className="d-flex align-items-center gap-3">
               {store.user && (
                 <span className="text-light me-2 small">
@@ -82,7 +77,12 @@ export const Navbar = () => {
                   {store.user.pokemon_name || store.user.name || "Usuario"}!
                 </span>
               )}
-              <button className="btn btn-danger btn-sm" onClick={clickLogout}>
+              {/* 🔥 CORRECCIÓN 3: Especificamos el tipo del botón para evitar comportamientos extraños */}
+              <button
+                type="button"
+                className="btn btn-danger btn-sm"
+                onClick={clickLogout}
+              >
                 Cerrar Sesión
               </button>
             </div>

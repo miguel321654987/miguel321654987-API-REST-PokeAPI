@@ -1,9 +1,9 @@
 import { useState } from "react"; // 💡 Eliminamos 'useRef'
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
-import { closeModalSafely } from "../hooks/actions.js";
+import { closeModalSafely } from "../utils.js";
 import { toast } from "react-toastify";
 
-export const Signup = (signupModal) => {
+export const Signup = ({ signupModal }) => {
   const { dispatch } = useGlobalReducer();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

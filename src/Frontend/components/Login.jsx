@@ -1,9 +1,9 @@
 import { useState } from "react"; // 💡 Ya no necesitas 'useRef'
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
-import { closeModalSafely, switchModals } from "../hooks/actions.js";
+import { closeModalSafely, switchModals } from "../utils.js";
 import { toast } from "react-toastify";
 
-export const Login = (loginModal) => {
+export const Login = ({ loginModal }) => {
   const { dispatch } = useGlobalReducer();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -103,12 +103,14 @@ export const Login = (loginModal) => {
         <form className="modal-content" onSubmit={handleLogin}>
           <div className="modal-header">
             <h2 className="modal-title fs-5">Login</h2>
+            {/* 🔥 CORRECCIÓN 2: Eliminamos data-bs-dismiss="modal" y dejamos que nuestro helper */}
+            {/* gestione el cierre de forma segura cuando el usuario pulsa la "X" */}
             <button
               type="button"
               className="btn-close"
-              data-bs-dismiss="modal" // Conservamos esto para cuando el usuario hace clic manual
               aria-label="Close"
               onClick={() => {
+                closeModalSafely(loginModal);
                 dispatch({ type: "SET_MESSAGE", payload: null });
                 setEmail("");
                 setPassword("");
