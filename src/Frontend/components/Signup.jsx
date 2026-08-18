@@ -3,7 +3,7 @@ import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { closeModalSafely } from "../hooks/actions.js";
 import { toast } from "react-toastify";
 
-export const Signup = ({ id }) => {
+export const Signup = (signupModal) => {
   const { dispatch } = useGlobalReducer();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -98,7 +98,7 @@ export const Signup = ({ id }) => {
         // El helper closeModalSafely intenta cerrar con Bootstrap primero, y si falla,
         // lo hace manualmente con CSS para garantizar que el modal se cierre sin dejar backdrop abierto.
         setTimeout(() => {
-          closeModalSafely(id);
+          closeModalSafely(signupModal);
           dispatch({ type: "SET_MESSAGE", payload: null });
         }, 300);
       }
@@ -114,7 +114,7 @@ export const Signup = ({ id }) => {
   return (
     <div
       className="modal fade"
-      id={id}
+      id={signupModal}
       data-bs-backdrop="static"
       data-bs-keyboard="false"
       tabIndex="-1"
