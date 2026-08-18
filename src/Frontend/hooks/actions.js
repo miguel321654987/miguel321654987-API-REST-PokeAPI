@@ -1,4 +1,5 @@
 import defaultImage from "../../assets/no-card-image.png";
+import { closeModalSafely } from "../utils.js";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
@@ -14,7 +15,22 @@ export const getActions = (store, dispatch) => {
 
   return {
     // === 🔐 CONTROL DE SESIÓN ===
-    handleLogout: () => {
+    // 🔥 CORRECCIÓN 2: Permitimos recibir de forma opcional el ID de un modal
+    // por si el botón de logout se presionó desde dentro de una ventana flotante.
+    handleLogout: (modalId = null) => {
+      // 1. Si se especifica un modal, lo cerramos de forma segura primero
+      if (modalId) {
+        closeModalSafely(modalId);
+      }
+
+      // 2. Por seguridad general, si Bootstrap dejó un fondo oscuro huérfano
+      // al desmontar componentes de forma abrupta, lo eliminamos manualmente.
+      const backdrop = document.querySelector(".modal-backdrop");
+      if (backdrop) backdrop.remove();
+      document.body.classList.remove("modal-open");
+      document.body.style.overflow = "";
+
+      // 3. Procedemos con la limpieza segura de los datos
       localStorage.removeItem("jwt-token");
       dispatch({ type: "LOGOUT" });
 

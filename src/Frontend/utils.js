@@ -6,7 +6,10 @@ export const closeModalSafely = (modalId) => {
   if (window.bootstrap?.Modal) {
     // .Modal: módulo específico de Bootstrap que controla la lógica de las ventanas emergentes (abrir, cerrar, animar).
     try {
-      const modalInstance = window.bootstrap.Modal.getOrCreateInstance(modalEl);
+      const modalInstance = window.bootstrap.Modal.getOrCreateInstance(
+        modalEl,
+        {},
+      );
       // Recupera la instancia activa de Bootstrap asociada a ese modal.
       // Si no existe una, la crea automáticamente. Es más seguro que getInstance().
       modalInstance.hide(); // Invoca método de Bootstrap para animar y cerrar el modal limpiamente
@@ -34,12 +37,15 @@ export const closeModalSafely = (modalId) => {
  * 🔧 HELPER DE APERTURA DEFENSIVA DE MODALES
  */
 export const openModalSafely = (modalId) => {
-  const modalEl = document.getElementById(modalId);
+  const modalEl = document.getElementById(modalId, {});
   if (!modalEl) return;
 
   if (window.bootstrap?.Modal) {
     try {
-      const modalInstance = window.bootstrap.Modal.getOrCreateInstance(modalEl);
+      const modalInstance = window.bootstrap.Modal.getOrCreateInstance(
+        modalEl,
+        {},
+      );
       modalInstance.show();
       return;
     } catch (error) {
