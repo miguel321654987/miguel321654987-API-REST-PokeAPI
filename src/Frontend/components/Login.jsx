@@ -3,7 +3,7 @@ import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { closeModalSafely, switchModals } from "../hooks/actions.js";
 import { toast } from "react-toastify";
 
-export const Login = ({ id }) => {
+export const Login = (loginModal) => {
   const { dispatch } = useGlobalReducer();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -14,7 +14,7 @@ export const Login = ({ id }) => {
     // usamos switchModals que maneja el timing de forma defensiva.
     // En local, Bootstrap a veces no está completamente inicializado en el instante exacto del click,
     // por lo que el helper intenta primero con Bootstrap y hace fallback a CSS si es necesario.
-    switchModals(id, "signupModal");
+    switchModals(loginModal, "signupModal");
   };
 
   const handleLogin = async (e) => {
@@ -77,7 +77,7 @@ export const Login = ({ id }) => {
       // El helper closeModalSafely intenta cerrar con Bootstrap primero, y si falla,
       // lo hace manualmente con CSS para garantizar que el modal se cierre sin dejar backdrop abierto.
       setTimeout(() => {
-        closeModalSafely(id);
+        closeModalSafely(loginModal);
         dispatch({ type: "SET_MESSAGE", payload: null });
         setEmail("");
         setPassword("");
@@ -94,7 +94,7 @@ export const Login = ({ id }) => {
   return (
     <div
       className="modal fade"
-      id={id}
+      id={loginModal}
       data-bs-backdrop="static"
       data-bs-keyboard="false"
       tabIndex="-1"

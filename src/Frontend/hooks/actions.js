@@ -2,17 +2,18 @@ import defaultImage from "../../assets/no-card-image.png";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
-/**
- * 🔧 HELPER DE CIERRE DEFENSIVO DE MODALES
- */
+// 🔧 HELPER DE CIERRE DEFENSIVO DE MODALES
 const closeModalSafely = (modalId) => {
   const modalEl = document.getElementById(modalId);
   if (!modalEl) return;
 
   if (window.bootstrap?.Modal) {
+    // .Modal: módulo específico de Bootstrap que controla la lógica de las ventanas emergentes (abrir, cerrar, animar).
     try {
       const modalInstance = window.bootstrap.Modal.getOrCreateInstance(modalEl);
-      modalInstance.hide();
+      // Recupera la instancia activa de Bootstrap asociada a ese modal.
+      // Si no existe una, la crea automáticamente. Es más seguro que getInstance().
+      modalInstance.hide(); // Función predeterminada de la librería Bootstrap
       return;
     } catch (error) {
       console.warn(
