@@ -10,8 +10,7 @@ export const Login = ({ loginModal }) => {
 
   const abrirSignupModal = () => {
     // 🌟 CAMBIO DEFENSIVO DE MODAL (Necesario para local VS Code)
-    // En lugar de intentar abrir/cerrar con Bootstrap directamente,
-    // usamos switchModals que maneja el timing de forma defensiva.
+    // En lugar de abrir/cerrar con Bootstrap directamente,usamos switchModals
     // En local, Bootstrap a veces no está completamente inicializado en el instante exacto del click,
     // por lo que el helper intenta primero con Bootstrap y hace fallback a CSS si es necesario.
     switchModals(loginModal, "signupModal");
