@@ -1,6 +1,6 @@
 // 🔧 HELPER DE CIERRE DEFENSIVO DE MODALES
-export const closeModalSafely = (modalId) => {
-  const modalEl = document.getElementById(modalId);
+export const closeModalSafely = (id) => {
+  const modalEl = document.getElementById(id);
   if (!modalEl) return;
 
   if (window.bootstrap?.Modal) {
@@ -16,7 +16,7 @@ export const closeModalSafely = (modalId) => {
       return;
     } catch (error) {
       console.warn(
-        `Bootstrap Modal.hide() falló para #${modalId}, usando fallback CSS`,
+        `Bootstrap Modal.hide() falló para #${id}, usando fallback CSS`,
         error,
       );
     }
@@ -33,11 +33,9 @@ export const closeModalSafely = (modalId) => {
   document.body.style.overflow = ""; // 🔥 Restablece el scroll si Bootstrap se quedó colgado
 };
 
-/**
- * 🔧 HELPER DE APERTURA DEFENSIVA DE MODALES
- */
-export const openModalSafely = (modalId) => {
-  const modalEl = document.getElementById(modalId, {});
+//* 🔧 HELPER DE APERTURA DEFENSIVA DE MODALES
+export const openModalSafely = (id) => {
+  const modalEl = document.getElementById(id, {});
   if (!modalEl) return;
 
   if (window.bootstrap?.Modal) {
@@ -50,7 +48,7 @@ export const openModalSafely = (modalId) => {
       return;
     } catch (error) {
       console.warn(
-        `Bootstrap Modal.show() falló para #${modalId}, usando fallback CSS`,
+        `Bootstrap Modal.show() falló para #${id}, usando fallback CSS`,
         error,
       );
     }
@@ -69,9 +67,7 @@ export const openModalSafely = (modalId) => {
   document.body.classList.add("modal-open");
 };
 
-/**
- * 🔧 HELPER PARA CAMBIAR ENTRE MODALES
- */
+//* 🔧 HELPER PARA CAMBIAR ENTRE MODALES
 export const switchModals = (closeId, openId) => {
   closeModalSafely(closeId);
 

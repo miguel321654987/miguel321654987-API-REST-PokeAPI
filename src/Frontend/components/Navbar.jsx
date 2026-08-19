@@ -74,7 +74,10 @@ export const Navbar = () => {
               {store.user && (
                 <span className="text-light me-2 small">
                   ¡Hola,{" "}
-                  {store.user.pokemon_name || store.user.name || "Usuario"}!
+                  {store.user?.email
+                    ? store.user.email.split("@")[0]
+                    : "Usuario"}
+                  !
                 </span>
               )}
               {/* 🔥 CORRECCIÓN 3: Especificamos el tipo del botón para evitar comportamientos extraños */}
