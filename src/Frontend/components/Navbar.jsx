@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
-import { openModalSafely } from "../utils.js"; // 🔥 CORRECCIÓN 1: Importamos el helper seguro
+import { openModalSafely } from "../utils.js";
 import { toast } from "react-toastify";
 
 export const Navbar = () => {
