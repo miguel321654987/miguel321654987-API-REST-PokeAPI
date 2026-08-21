@@ -126,9 +126,9 @@ export const Signup = ({ signupModal }) => {
             <button
               type="button"
               className="btn-close"
-              data-bs-dismiss="modal" // Lo dejamos intacto para clics manuales del usuario
               aria-label="Close"
               onClick={() => {
+                closeModalSafely(signupModal); // 🔥 Corrección defensiva
                 dispatch({ type: "SET_MESSAGE", payload: null });
                 setName("");
                 setLast_name("");
