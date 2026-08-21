@@ -121,7 +121,7 @@ export const Login = ({ loginModal }) => {
               className="form-control mb-2"
               type="email"
               placeholder="Email"
-              autoComplete="username"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
