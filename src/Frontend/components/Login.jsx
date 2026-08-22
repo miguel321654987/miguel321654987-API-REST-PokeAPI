@@ -1,24 +1,24 @@
-import { useState } from "react"; // 💡 Ya no necesitas 'useRef'
+import { useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { closeModalSafely, switchModals } from "../utils.js";
 import { toast } from "react-toastify";
 
-export const Login = ({ loginModal }) => {
+export const Login = ({ loginModal, signupModal }) => {
   const { dispatch } = useGlobalReducer();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const abrirSignupModal = () => {
     // 🌟 CAMBIO DEFENSIVO DE MODAL (Necesario para local VS Code)
+    switchModals(loginModal, signupModal);
     // En lugar de abrir/cerrar con Bootstrap directamente,usamos switchModals
-    // En local, Bootstrap a veces no está completamente inicializado en el instante exacto del click,
-    // por lo que el helper intenta primero con Bootstrap y hace fallback a CSS si es necesario.
-    switchModals(loginModal, "signupModal");
+    // En local, Bootstrap a veces no está completamente inicializado en el click
+    // El helper intenta primero con Bootstrap y hace fallback a CSS si es necesario.
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    dispatch({ type: "SET_MESSAGE", payload: null });
+    dispatch({ type: "SET_MESSAGE", payload: null }); // Limpiamos mensajes previos
 
     if (!email.trim() || !password.trim()) {
       dispatch({
@@ -71,10 +71,10 @@ export const Login = ({ loginModal }) => {
       });
       toast.success("¡Sesión iniciada!");
 
-      // 🌟 CIERRE DEFENSIVO DEL MODAL (Necesario para local VS Code)
+      // 🌟 CIERRE DEFENSIVO DEL MODAL
       // En entorno local, Bootstrap a veces tarda en inicializarse completamente.
       // El helper closeModalSafely intenta cerrar con Bootstrap primero, y si falla,
-      // lo hace manualmente con CSS para garantizar que el modal se cierre sin dejar backdrop abierto.
+      // lo hace con CSS para que el modal se cierre sin dejar backdrop abierto.
       setTimeout(() => {
         closeModalSafely(loginModal);
         dispatch({ type: "SET_MESSAGE", payload: null });
@@ -102,7 +102,7 @@ export const Login = ({ loginModal }) => {
         <form className="modal-content" onSubmit={handleLogin}>
           <div className="modal-header">
             <h2 className="modal-title fs-5">Login</h2>
-            {/* 🔥 CORRECCIÓN 2: Eliminamos data-bs-dismiss="modal" y dejamos que nuestro helper */}
+            {/* 🔥 Eliminamos data-bs-dismiss="modal" y dejamos que nuestro helper */}
             {/* gestione el cierre de forma segura cuando el usuario pulsa la "X" */}
             <button
               type="button"
