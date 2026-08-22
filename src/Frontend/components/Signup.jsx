@@ -1,4 +1,4 @@
-import { useState } from "react"; // 💡 Eliminamos 'useRef'
+import { useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { closeModalSafely } from "../utils.js";
 import { toast } from "react-toastify";
@@ -93,10 +93,10 @@ export const Signup = ({ signupModal }) => {
         setEmail("");
         setPassword("");
 
-        // 🌟 CIERRE DEFENSIVO DEL MODAL (Necesario para local VS Code)
+        // 🌟 CIERRE DEFENSIVO DEL MODAL
         // En entorno local, Bootstrap a veces tarda en inicializarse completamente.
         // El helper closeModalSafely intenta cerrar con Bootstrap primero, y si falla,
-        // lo hace manualmente con CSS para garantizar que el modal se cierre sin dejar backdrop abierto.
+        // lo hace manualmente con CSS para que el modal se cierre sin dejar backdrop abierto.
         setTimeout(() => {
           closeModalSafely(signupModal);
           dispatch({ type: "SET_MESSAGE", payload: null });
